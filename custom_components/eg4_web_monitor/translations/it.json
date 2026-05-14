@@ -1,0 +1,770 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Configurazione EG4 Web Monitor",
+        "description": "Collega il tuo account cloud EG4 per accedere a tutte le funzionalita inclusi GridBOSS, Ricarica Rapida e aggiornamenti firmware. Puoi aggiungere dispositivi locali in seguito per un polling piu veloce.",
+        "menu_options": {
+          "cloud_credentials": "Collega Account Cloud",
+          "local_device_type": "Salta — Solo Locale"
+        }
+      },
+      "cloud_credentials": {
+        "title": "Credenziali API Cloud {brand_name}",
+        "description": "Connettiti al tuo account {brand_name} Web Monitor per gestire i tuoi inverter solari, dispositivi GridBOSS e sistemi di batterie.",
+        "data": {
+          "username": "Nome utente",
+          "password": "Password",
+          "base_url": "URL Base",
+          "verify_ssl": "Verifica Certificato SSL",
+          "dst_sync": "Sincronizzazione Ora Legale"
+        },
+        "data_description": {
+          "username": "Il tuo nome utente dell'account {brand_name} Web Monitor",
+          "password": "La tua password dell'account {brand_name} Web Monitor",
+          "base_url": "L'URL base per l'API {brand_name} Web Monitor",
+          "verify_ssl": "Abilita la verifica del certificato SSL per connessioni sicure",
+          "dst_sync": "Sincronizza automaticamente le impostazioni dell'ora legale sull'inverter in base al fuso orario di Home Assistant"
+        }
+      },
+      "cloud_station": {
+        "title": "Seleziona Stazione",
+        "description": "Scegli quale stazione/impianto solare monitorare.",
+        "data": {
+          "plant_id": "Stazione/Impianto"
+        },
+        "data_description": {
+          "plant_id": "Seleziona l'installazione solare che vuoi monitorare"
+        }
+      },
+      "cloud_add_local": {
+        "title": "Aggiungere Dispositivi Locali?",
+        "description": "La tua connessione cloud e pronta. Puoi opzionalmente aggiungere dispositivi locali per un polling piu veloce (aggiornamenti ogni 5 secondi via Modbus/Dongle contro i 30 secondi del cloud).",
+        "menu_options": {
+          "local_device_type": "Aggiungi Dispositivo Locale",
+          "cloud_finish": "Termina (Solo Cloud)"
+        }
+      },
+      "local_device_type": {
+        "title": "Seleziona Connessione Dispositivo",
+        "description": "Scegli come il tuo dispositivo e connesso localmente.",
+        "menu_options": {
+          "network_scan_config": "Scansione Rete (Auto-Scoperta)",
+          "local_modbus": "Modbus TCP (Inserimento Manuale)",
+          "local_serial": "USB Seriale (adattatore RS485)",
+          "local_dongle": "Dongle WiFi (Inserimento Manuale)"
+        }
+      },
+      "network_scan_config": {
+        "title": "Impostazioni Scansione Rete",
+        "description": "Scansiona la tua rete locale per trovare dispositivi {brand_name}. I dispositivi Modbus (porta 502) vengono identificati completamente. I candidati dongle WiFi (porta 8000) richiedono l'inserimento manuale dei numeri di serie.",
+        "data": {
+          "ip_range": "Intervallo IP (CIDR)",
+          "scan_modbus": "Cerca Modbus TCP (porta 502)",
+          "scan_dongle": "Cerca Dongle WiFi (porta 8000)",
+          "timeout": "Timeout Connessione (secondi)"
+        },
+        "data_description": {
+          "ip_range": "Intervallo di rete in notazione CIDR (es., 192.168.1.0/24). Rilevato automaticamente dalla rete di Home Assistant.",
+          "timeout": "Tempo di attesa per ogni dispositivo. Inferiore = scansione piu veloce, superiore = piu affidabile."
+        }
+      },
+      "network_scan_progress": {
+        "title": "Scansione Rete in Corso...",
+        "description": "Scansione della rete locale per dispositivi {brand_name}. Potrebbe richiedere qualche istante."
+      },
+      "network_scan_results": {
+        "title": "Trovati {device_count} Dispositivo/i",
+        "description": "Seleziona un dispositivo dai risultati della scansione (intervallo scansionato: {scanned_range}). I dispositivi Modbus sono completamente identificati. I candidati dongle richiedono l'inserimento dei numeri di serie nella schermata successiva.",
+        "data": {
+          "device": "Seleziona Dispositivo"
+        }
+      },
+      "network_scan_empty": {
+        "title": "Nessun Dispositivo Trovato",
+        "description": "La scansione di {scanned_range} non ha trovato dispositivi {brand_name}. Puoi inserire i dettagli di connessione manualmente.",
+        "menu_options": {
+          "local_modbus": "Inserisci Modbus Manualmente",
+          "local_dongle": "Inserisci Dongle Manualmente"
+        }
+      },
+      "local_modbus": {
+        "title": "Connetti via Modbus TCP",
+        "description": "Inserisci l'indirizzo IP del tuo gateway Modbus TCP. Il numero di serie, modello e firmware del dispositivo vengono rilevati automaticamente.",
+        "data": {
+          "modbus_host": "Indirizzo IP Gateway",
+          "modbus_port": "Porta",
+          "modbus_unit_id": "ID Unita"
+        },
+        "data_description": {
+          "modbus_host": "Indirizzo IP del tuo adattatore RS485-to-Ethernet (es., 192.168.1.100)",
+          "modbus_port": "Porta TCP (predefinita: 502)",
+          "modbus_unit_id": "ID slave Modbus (predefinito: 1)"
+        }
+      },
+      "local_dongle": {
+        "title": "Connetti via Dongle WiFi",
+        "description": "Inserisci i dettagli di connessione del dongle. Il numero di serie del dongle e stampato sull'etichetta del dispositivo (anche il nome della rete WiFi AP). Nota: Aggiornamenti firmware recenti potrebbero bloccare questo accesso.",
+        "data": {
+          "dongle_host": "Indirizzo IP Dongle",
+          "dongle_serial": "Numero di Serie Dongle",
+          "inverter_serial": "Numero di Serie Inverter",
+          "dongle_port": "Porta"
+        },
+        "data_description": {
+          "dongle_host": "Indirizzo IP del tuo dongle WiFi sulla rete locale",
+          "dongle_serial": "Numero di serie dongle di 10 caratteri (BJ/BA per inverter, DJ per GridBOSS)",
+          "inverter_serial": "Numero di serie di 10 caratteri dalla targhetta del dispositivo (richiesto per l'autenticazione)",
+          "dongle_port": "Porta TCP (predefinita: 8000)"
+        }
+      },
+      "local_serial": {
+        "title": "Connetti via USB Seriale",
+        "description": "Seleziona il tuo adattatore seriale USB-to-RS485. Il numero di serie, modello e firmware del dispositivo vengono rilevati automaticamente.",
+        "data": {
+          "serial_port": "Porta Seriale",
+          "serial_baudrate": "Baud Rate",
+          "serial_parity": "Parita",
+          "serial_stopbits": "Bit di Stop",
+          "modbus_unit_id": "ID Unita"
+        },
+        "data_description": {
+          "serial_port": "Seleziona il tuo adattatore seriale USB o inseriscilo manualmente",
+          "serial_baudrate": "Velocita di comunicazione (predefinita: 19200)",
+          "serial_parity": "Impostazione bit di parita (predefinita: Nessuna)",
+          "serial_stopbits": "Numero di bit di stop (predefinito: 1)",
+          "modbus_unit_id": "ID slave Modbus (predefinito: 1)"
+        }
+      },
+      "local_serial_manual": {
+        "title": "Inserisci Percorso Porta Seriale",
+        "description": "Inserisci manualmente il percorso del tuo adattatore seriale USB-to-RS485.",
+        "data": {
+          "serial_port": "Percorso Porta Seriale"
+        },
+        "data_description": {
+          "serial_port": "es., /dev/ttyUSB0 (Linux), COM1 (Windows), /dev/tty.usbserial-* (macOS)"
+        }
+      },
+      "local_device_confirmed": {
+        "title": "Conferma dispositivo",
+        "description": "**{device_type}**: {device_model}\n**Seriale**: {device_serial}\n**Famiglia**: {device_family}\n**Firmware**: {device_firmware}\n**Potenza PV**: {device_pv_power}W | **SOC Batteria**: {device_battery_soc}%\n\nSeleziona il tipo di rete elettrica:",
+        "data": {
+          "grid_type": "Tipo di rete"
+        },
+        "data_description": {
+          "grid_type": "Split Phase per US 120V/240V (L1/L2), Monofase per Brasile 220V o EU 230V, Trifase per sistemi R/S/T"
+        }
+      },
+      "local_device_added": {
+        "title": "Dispositivo aggiunto",
+        "description": "Dispositivo #{device_count} aggiunto con successo. Cosa fare?",
+        "menu_options": {
+          "local_device_type": "Aggiungi un altro dispositivo",
+          "local_add_cloud": "Aggiungi credenziali cloud",
+          "local_finish": "Completa configurazione"
+        }
+      },
+      "local_finish": {
+        "title": "Dai un Nome alla Tua Installazione",
+        "description": "Dai un nome amichevole alla tua installazione solare.\n\n**Dispositivi configurati**: {device_summary}",
+        "data": {
+          "station_name": "Nome Installazione (opzionale)"
+        },
+        "data_description": {
+          "station_name": "Lascia vuoto per usare il modello e numero di serie del dispositivo come nome"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Riautenticazione {brand_name}",
+        "description": "La tua sessione e scaduta. Reinserisci la password per ripristinare l'accesso.",
+        "data": {
+          "password": "Password"
+        },
+        "data_description": {
+          "password": "La tua password dell'account {brand_name} Web Monitor"
+        }
+      },
+      "reconfigure_menu": {
+        "title": "Riconfigura",
+        "description": "Cosa vorresti modificare?",
+        "menu_options": {
+          "reconfigure_cloud_update": "Aggiorna Credenziali Cloud",
+          "reconfigure_cloud_remove": "Rimuovi Connessione Cloud",
+          "reconfigure_cloud_add": "Aggiungi Credenziali Cloud",
+          "reconfigure_devices": "Gestisci Dispositivi Locali"
+        }
+      },
+      "reconfigure_cloud_update": {
+        "title": "Aggiorna Credenziali Cloud",
+        "description": "Aggiorna le credenziali del tuo account {brand_name} Web Monitor.",
+        "data": {
+          "username": "Nome utente",
+          "password": "Password",
+          "base_url": "URL Base",
+          "verify_ssl": "Verifica Certificato SSL",
+          "dst_sync": "Sincronizzazione Ora Legale"
+        },
+        "data_description": {
+          "username": "Il tuo nome utente dell'account {brand_name} Web Monitor",
+          "password": "La tua password dell'account {brand_name} Web Monitor",
+          "base_url": "L'URL base per l'API {brand_name} Web Monitor",
+          "verify_ssl": "Abilita la verifica del certificato SSL per connessioni sicure",
+          "dst_sync": "Sincronizza automaticamente le impostazioni dell'ora legale"
+        }
+      },
+      "reconfigure_cloud_add": {
+        "title": "Aggiungi Credenziali Cloud",
+        "description": "Aggiungi le credenziali API cloud per abilitare i dettagli delle batterie, il controllo remoto e la scoperta dei dispositivi.",
+        "data": {
+          "username": "Nome utente",
+          "password": "Password",
+          "base_url": "URL Base",
+          "verify_ssl": "Verifica Certificato SSL",
+          "dst_sync": "Sincronizzazione Ora Legale"
+        },
+        "data_description": {
+          "username": "Il tuo nome utente dell'account {brand_name} Web Monitor",
+          "password": "La tua password dell'account {brand_name} Web Monitor",
+          "base_url": "L'URL base per l'API {brand_name} Web Monitor",
+          "verify_ssl": "Abilita la verifica del certificato SSL per connessioni sicure",
+          "dst_sync": "Sincronizza automaticamente le impostazioni dell'ora legale"
+        }
+      },
+      "reconfigure_cloud_station": {
+        "title": "Cambia Stazione",
+        "description": "Seleziona una stazione/impianto solare diverso da monitorare.",
+        "data": {
+          "plant_id": "Stazione/Impianto"
+        },
+        "data_description": {
+          "plant_id": "Seleziona l'installazione solare che vuoi monitorare"
+        }
+      },
+      "reconfigure_cloud_remove": {
+        "title": "Rimuovi Connessione Cloud",
+        "description": "Questo rimuovera le credenziali cloud dalla tua configurazione. I tuoi dispositivi locali continueranno a funzionare.\n\nFunzionalita che richiedono il cloud e saranno disabilitate:\n- Interruttore Ricarica Rapida\n- Notifiche aggiornamenti firmware\n\nTutti gli altri controlli (Backup Batteria, Carica AC, limiti SOC, ecc.) funzionano localmente via registri Modbus.",
+        "submit": "Rimuovi Connessione Cloud"
+      },
+      "reconfigure_devices": {
+        "title": "Gestisci Dispositivi Locali",
+        "description": "{device_list}",
+        "menu_options": {
+          "reconfigure_device_add": "Aggiungi Dispositivo",
+          "reconfigure_device_remove": "Rimuovi Dispositivo",
+          "reconfigure_devices_save": "Salva e Chiudi"
+        }
+      },
+      "reconfigure_device_remove": {
+        "title": "Rimuovi Dispositivo Locale",
+        "description": "Seleziona il dispositivo da rimuovere da questa configurazione.",
+        "data": {
+          "device": "Dispositivo"
+        }
+      },
+      "reconfigure_device_add": {
+        "title": "Aggiungi Dispositivo Locale",
+        "description": "Seleziona il tipo di connessione per il tuo nuovo dispositivo.",
+        "menu_options": {
+          "network_scan_config": "Scansione Rete (Auto-Scoperta)",
+          "reconfigure_add_modbus": "Modbus TCP (Inserimento Manuale)",
+          "reconfigure_add_serial": "USB Seriale (adattatore RS485)",
+          "reconfigure_add_dongle": "Dongle WiFi (Inserimento Manuale)"
+        }
+      },
+      "reconfigure_add_modbus": {
+        "title": "Aggiungi Dispositivo Modbus",
+        "description": "Configura una nuova connessione Modbus TCP. Le informazioni del dispositivo vengono rilevate automaticamente.",
+        "data": {
+          "modbus_host": "Indirizzo IP Gateway",
+          "modbus_port": "Porta",
+          "modbus_unit_id": "ID Unita"
+        },
+        "data_description": {
+          "modbus_host": "Indirizzo IP del tuo adattatore RS485-to-Ethernet (es., 192.168.1.100)",
+          "modbus_port": "Porta TCP (predefinita: 502)",
+          "modbus_unit_id": "ID slave Modbus (predefinito: 1)"
+        }
+      },
+      "reconfigure_add_dongle": {
+        "title": "Aggiungi Dispositivo Dongle WiFi",
+        "description": "Configura una nuova connessione dongle WiFi. Le informazioni del dispositivo vengono rilevate automaticamente.",
+        "data": {
+          "dongle_host": "Indirizzo IP Dongle",
+          "dongle_serial": "Numero di Serie Dongle",
+          "inverter_serial": "Numero di Serie Inverter",
+          "dongle_port": "Porta"
+        },
+        "data_description": {
+          "dongle_host": "Indirizzo IP del tuo dongle WiFi sulla rete locale",
+          "dongle_serial": "Numero di serie dongle di 10 caratteri (BJ/BA per inverter, DJ per GridBOSS)",
+          "inverter_serial": "Numero di serie di 10 caratteri dalla targhetta del dispositivo (richiesto per l'autenticazione)",
+          "dongle_port": "Porta TCP (predefinita: 8000)"
+        }
+      },
+      "reconfigure_add_serial": {
+        "title": "Aggiungi Dispositivo USB Seriale",
+        "description": "Configura una nuova connessione seriale USB-to-RS485. Le informazioni del dispositivo vengono rilevate automaticamente.",
+        "data": {
+          "serial_port": "Porta Seriale",
+          "serial_baudrate": "Baud Rate",
+          "serial_parity": "Parita",
+          "serial_stopbits": "Bit di Stop",
+          "modbus_unit_id": "ID Unita"
+        },
+        "data_description": {
+          "serial_port": "Seleziona il tuo adattatore seriale USB o inseriscilo manualmente",
+          "serial_baudrate": "Velocita di comunicazione (predefinita: 19200)",
+          "serial_parity": "Impostazione bit di parita (predefinita: Nessuna)",
+          "serial_stopbits": "Numero di bit di stop (predefinito: 1)",
+          "modbus_unit_id": "ID slave Modbus (predefinito: 1)"
+        }
+      },
+      "reconfigure_add_serial_manual": {
+        "title": "Inserisci Percorso Porta Seriale",
+        "description": "Inserisci manualmente il percorso del tuo adattatore seriale USB-to-RS485.",
+        "data": {
+          "serial_port": "Percorso Porta Seriale"
+        },
+        "data_description": {
+          "serial_port": "es., /dev/ttyUSB0 (Linux), COM1 (Windows), /dev/tty.usbserial-* (macOS)"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Impossibile connettersi a {brand_name} Web Monitor. Controlla la connessione di rete e riprova.",
+      "invalid_auth": "Nome utente o password non validi. Controlla le tue credenziali e riprova.",
+      "unknown": "Si e verificato un errore imprevisto. Riprova o controlla i log per maggiori dettagli.",
+      "no_plants": "Nessuna stazione/impianto solare trovato nel tuo account. Assicurati di avere almeno una stazione configurata nel tuo account {brand_name} Web Monitor.",
+      "invalid_plant": "La stazione/impianto selezionato non e piu disponibile. Seleziona una stazione diversa.",
+      "timeout": "Connessione a {brand_name} Web Monitor scaduta. Controlla la connessione internet e riprova.",
+      "modbus_not_installed": "La libreria pymodbus non e installata. Installala usando: pip install pymodbus",
+      "modbus_timeout": "Connessione Modbus scaduta. Verifica l'indirizzo IP e assicurati che il gateway Modbus sia acceso e connesso.",
+      "modbus_connection_failed": "Impossibile connettersi al gateway Modbus. Verifica: (1) l'indirizzo IP sia corretto, (2) la porta 502 non sia bloccata, (3) Modbus TCP sia abilitato sul gateway.",
+      "dongle_timeout": "Connessione al dongle WiFi scaduta. Verifica l'indirizzo IP e assicurati che il dongle sia connesso alla rete.",
+      "dongle_connection_failed": "Impossibile connettersi al dongle WiFi. Verifica: (1) l'indirizzo IP sia corretto, (2) la porta 8000 non sia bloccata, (3) il firmware del dongle supporti l'accesso locale (aggiornamenti recenti potrebbero bloccare questa funzionalita).",
+      "duplicate_serial": "Un dispositivo con questo numero di serie e gia stato aggiunto a questa installazione.",
+      "duplicate_transport": "Un dispositivo a questo indirizzo e porta e gia stato aggiunto. Ogni connessione locale deve usare una combinazione host:porta unica.",
+      "serial_mismatch": "Il dispositivo a questo indirizzo ha un numero di serie diverso da quello atteso. Questo potrebbe indicare una sostituzione del dispositivo o una configurazione errata.",
+      "serial_timeout": "Connessione alla porta seriale scaduta. Verifica il percorso della porta e assicurati che l'adattatore USB sia collegato.",
+      "serial_permission_denied": "Permesso negato per l'accesso alla porta seriale. Su Linux, assicurati che il tuo utente sia nel gruppo 'dialout'. Su macOS, concedi a Home Assistant l'accesso al dispositivo USB.",
+      "serial_port_error": "Impossibile aprire la porta seriale. Verifica: (1) il percorso della porta sia corretto, (2) l'adattatore USB sia collegato, (3) il dispositivo non sia in uso da un'altra applicazione.",
+      "serial_port_in_use": "La porta seriale e gia in uso da un'altra applicazione. Chiudi le altre applicazioni che usano questa porta e riprova.",
+      "invalid_ip_range": "Intervallo IP non valido. Usa la notazione CIDR (es., 192.168.1.0/24) o un intervallo con trattino (es., 192.168.1.1-192.168.1.254). Sono consentiti solo intervalli IP privati.",
+      "no_scan_type_selected": "Seleziona almeno un tipo di scansione (Modbus o Dongle)."
+    },
+    "abort": {
+      "already_configured": "Questa stazione {brand_name} Web Monitor e gia configurata. Ogni stazione richiede un'istanza di integrazione separata.",
+      "reauth_successful": "Riautenticazione completata! La tua integrazione {brand_name} Web Monitor e ora riconnessa.",
+      "reconfigure_successful": "Riconfigurazione completata! Le tue impostazioni {brand_name} Web Monitor sono state aggiornate.",
+      "entry_not_found": "Voce di configurazione non trovata. L'integrazione potrebbe essere stata rimossa. Aggiungila di nuovo dalla pagina Integrazioni.",
+      "serial_already_configured": "L'inverter {serial} e gia configurato in \"{entry_title}\". Rimuovi prima quella voce, oppure usa il flusso Riconfigura per cambiare tipo di connessione."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Opzioni {brand_name} Web Monitor",
+        "description": "Configura gli intervalli di polling per la tua integrazione {brand_name} Web Monitor. Gli aggiornamenti dei sensori controllano quanto spesso vengono recuperati i dati del dispositivo. L'aggiornamento dei parametri controlla quanto spesso le impostazioni di configurazione vengono sincronizzate.",
+        "data": {
+          "sensor_update_interval": "Intervallo Aggiornamento Sensori (secondi)",
+          "modbus_update_interval": "Intervallo aggiornamento Modbus (secondi)",
+          "dongle_update_interval": "Intervallo aggiornamento WiFi Dongle (secondi)",
+          "http_polling_interval": "Intervallo di polling HTTP/cloud (secondi)",
+          "parameter_refresh_interval": "Intervallo Aggiornamento Parametri (minuti)",
+          "library_debug": "Log di Debug Libreria",
+          "data_validation": "Validazione Dati Registro",
+          "include_ac_couple_pv": "Includi PV accoppiato CA nei totali"
+        },
+        "data_description": {
+          "sensor_update_interval": "Quanto spesso eseguire il polling per gli aggiornamenti dei sensori ({min_sensor_interval}-{max_sensor_interval} secondi). Valori piu bassi forniscono aggiornamenti piu veloci ma aumentano il carico dell'API.",
+          "modbus_update_interval": "Frequenza di interrogazione dei dispositivi Modbus TCP/Seriali ({min_modbus_interval}-{max_modbus_interval} secondi). Valori piu bassi forniscono aggiornamenti piu rapidi ma aumentano il traffico del bus.",
+          "dongle_update_interval": "Frequenza di interrogazione dei dispositivi WiFi Dongle ({min_dongle_interval}-{max_dongle_interval} secondi). Le connessioni WiFi potrebbero necessitare di intervalli piu lunghi rispetto a Modbus per la stabilita.",
+          "http_polling_interval": "Frequenza di interrogazione dell'API cloud ({min_http_interval}-{max_http_interval} secondi). Valori più alti riducono il carico dell'API. In modalità ibrida, questo controlla solo i dati cloud; i dati di trasporto locale vengono aggiornati all'intervallo del sensore.",
+          "parameter_refresh_interval": "Quanto spesso aggiornare i parametri dell'inverter come limiti SOC e impostazioni di carica ({min_param_interval}-{max_param_interval} minuti).",
+          "library_debug": "Abilita il logging DEBUG per la libreria pylxpweb (mostra richieste API, risposte e operazioni interne della libreria)",
+          "data_validation": "Abilita il rilevamento della corruzione per le letture dei registri locali. Valida i limiti fisici (SoC, frequenza, stato porte smart) e la monotonia energetica. Abilitare solo in caso di letture instabili (entità fantasma, picchi di energia, valori non validi).",
+          "include_ac_couple_pv": "Aggiungere la potenza dell'inverter solare accoppiato CA (dalle Smart Port del GridBOSS) ai totali PV del gruppo parallelo"
+        }
+      }
+    }
+  },
+  "selector": {
+    "operating_mode": {
+      "options": {
+        "normal": "Normale",
+        "standby": "Standby"
+      }
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "dongle_connectivity": {
+        "name": "Connettivita Dongle",
+        "state": {
+          "on": "Connesso",
+          "off": "Disconnesso"
+        }
+      }
+    },
+    "sensor": {
+      "ac_power": {
+        "name": "Potenza AC"
+      },
+      "ac_voltage": {
+        "name": "Tensione AC"
+      },
+      "ac_current": {
+        "name": "Corrente AC"
+      },
+      "frequency": {
+        "name": "Frequenza"
+      },
+      "dc_power": {
+        "name": "Potenza DC"
+      },
+      "dc_voltage": {
+        "name": "Tensione DC"
+      },
+      "dc_current": {
+        "name": "Corrente DC"
+      },
+      "battery_power": {
+        "name": "Potenza Batteria"
+      },
+      "battery_voltage": {
+        "name": "Tensione Batteria"
+      },
+      "battery_current": {
+        "name": "Corrente Batteria"
+      },
+      "state_of_charge": {
+        "name": "Stato di Carica"
+      },
+      "state_of_health": {
+        "name": "Stato di Salute"
+      },
+      "total_energy": {
+        "name": "Energia Totale"
+      },
+      "daily_energy": {
+        "name": "Energia Giornaliera"
+      },
+      "monthly_energy": {
+        "name": "Energia Mensile"
+      },
+      "yearly_energy": {
+        "name": "Energia Annuale"
+      },
+      "internal_temperature": {
+        "name": "Temperatura Interna"
+      },
+      "radiator1_temperature": {
+        "name": "Temperatura Radiatore 1"
+      },
+      "radiator2_temperature": {
+        "name": "Temperatura Radiatore 2"
+      },
+      "bt_temperature": {
+        "name": "Temperatura BT"
+      },
+      "status_code": {
+        "name": "Codice Stato"
+      },
+      "status_text": {
+        "name": "Stato"
+      },
+      "grid_power": {
+        "name": "Potenza Rete"
+      },
+      "load_power": {
+        "name": "Potenza Carico"
+      },
+      "pv_total_power": {
+        "name": "Potenza PV Totale"
+      },
+      "pv1_power": {
+        "name": "Potenza PV1"
+      },
+      "pv2_power": {
+        "name": "Potenza PV2"
+      },
+      "pv3_power": {
+        "name": "Potenza PV3"
+      },
+      "cell_voltage_max": {
+        "name": "Tensione Cella Massima"
+      },
+      "cell_voltage_min": {
+        "name": "Tensione Cella Minima"
+      },
+      "cell_voltage_delta": {
+        "name": "Delta Tensione Celle"
+      },
+      "cycle_count": {
+        "name": "Conteggio Cicli"
+      },
+      "firmware_version": {
+        "name": "Versione Firmware"
+      },
+      "grid_voltage_r": {
+        "name": "Tensione Rete R"
+      },
+      "grid_voltage_s": {
+        "name": "Tensione Rete S"
+      },
+      "grid_voltage_t": {
+        "name": "Tensione Rete T"
+      },
+      "grid_voltage": {
+        "name": "Tensione Rete"
+      },
+      "grid_frequency": {
+        "name": "Frequenza Rete"
+      },
+      "eps_voltage_r": {
+        "name": "Tensione EPS R"
+      },
+      "eps_voltage_s": {
+        "name": "Tensione EPS S"
+      },
+      "eps_voltage_t": {
+        "name": "Tensione EPS T"
+      },
+      "eps_voltage": {
+        "name": "Tensione EPS"
+      },
+      "eps_frequency": {
+        "name": "Frequenza EPS"
+      },
+      "eps_power": {
+        "name": "Potenza EPS"
+      },
+      "eps_power_l1": {
+        "name": "Potenza EPS L1"
+      },
+      "eps_power_l2": {
+        "name": "Potenza EPS L2"
+      },
+      "eps_apparent_power_l1": {
+        "name": "Potenza apparente EPS L1"
+      },
+      "eps_apparent_power_l2": {
+        "name": "Potenza apparente EPS L2"
+      },
+      "eps_energy_today_l1": {
+        "name": "Energia EPS oggi L1"
+      },
+      "eps_energy_today_l2": {
+        "name": "Energia EPS oggi L2"
+      },
+      "eps_energy_total_l1": {
+        "name": "Energia EPS totale L1"
+      },
+      "eps_energy_total_l2": {
+        "name": "Energia EPS totale L2"
+      },
+      "inverter_power_l1": {
+        "name": "Potenza inverter L1"
+      },
+      "inverter_power_l2": {
+        "name": "Potenza inverter L2"
+      },
+      "rectifier_power_l1": {
+        "name": "Potenza raddrizzatore L1"
+      },
+      "rectifier_power_l2": {
+        "name": "Potenza raddrizzatore L2"
+      },
+      "grid_export_power_l1": {
+        "name": "Potenza esportata in rete L1"
+      },
+      "grid_export_power_l2": {
+        "name": "Potenza esportata in rete L2"
+      },
+      "grid_import_power_l1": {
+        "name": "Potenza importata dalla rete L1"
+      },
+      "grid_import_power_l2": {
+        "name": "Potenza importata dalla rete L2"
+      },
+      "generator_voltage_l1": {
+        "name": "Tensione generatore L1"
+      },
+      "generator_voltage_l2": {
+        "name": "Tensione generatore L2"
+      },
+      "power_output": {
+        "name": "Potenza in Uscita"
+      },
+      "rectifier_power": {
+        "name": "Potenza Raddrizzatore"
+      },
+      "ac_couple_power": {
+        "name": "Potenza AC Couple"
+      },
+      "bus1_voltage": {
+        "name": "Tensione Bus 1"
+      },
+      "bus2_voltage": {
+        "name": "Tensione Bus 2"
+      },
+      "total_load_power": {
+        "name": "Potenza Carico Totale"
+      },
+      "smart_port1_status": {
+        "name": "Stato Smart Port 1",
+        "state": {
+          "unused": "Non utilizzato",
+          "smart_load": "Smart Load",
+          "ac_couple": "AC Couple"
+        }
+      },
+      "smart_port2_status": {
+        "name": "Stato Smart Port 2",
+        "state": {
+          "unused": "Non utilizzato",
+          "smart_load": "Smart Load",
+          "ac_couple": "AC Couple"
+        }
+      },
+      "smart_port3_status": {
+        "name": "Stato Smart Port 3",
+        "state": {
+          "unused": "Non utilizzato",
+          "smart_load": "Smart Load",
+          "ac_couple": "AC Couple"
+        }
+      },
+      "smart_port4_status": {
+        "name": "Stato Smart Port 4",
+        "state": {
+          "unused": "Non utilizzato",
+          "smart_load": "Smart Load",
+          "ac_couple": "AC Couple"
+        }
+      },
+      "battery_bank_charge_rate": {
+        "name": "Tasso di carica del banco batterie"
+      },
+      "battery_charge_rate": {
+        "name": "Tasso di carica"
+      },
+      "parallel_battery_charge_rate": {
+        "name": "Tasso di carica batteria"
+      }
+    },
+    "switch": {
+      "quick_charge": {
+        "name": "Ricarica Rapida"
+      },
+      "battery_backup_eps": {
+        "name": "Backup Batteria (EPS)"
+      },
+      "off_grid_mode": {
+        "name": "Modalita Isolata"
+      }
+    },
+    "number": {
+      "system_charge_soc_limit": {
+        "name": "Limite SOC Carica Sistema"
+      },
+      "ac_charge_power": {
+        "name": "Potenza Carica AC"
+      },
+      "pv_charge_power": {
+        "name": "Potenza Carica PV"
+      },
+      "pv_start_voltage": {
+        "name": "Tensione di avvio PV"
+      },
+      "ac_charge_soc_limit": {
+        "name": "Limite SOC Carica AC"
+      },
+      "soc_cutoff": {
+        "name": "Soglia SOC"
+      }
+    },
+    "button": {
+      "refresh_data": {
+        "name": "Aggiorna Dati"
+      }
+    },
+    "select": {
+      "operating_mode": {
+        "name": "Modalita Operativa",
+        "state": {
+          "normal": "Normale",
+          "standby": "Standby"
+        }
+      },
+      "pv_input_mode": {
+        "name": "Modalita ingresso PV",
+        "state": {
+          "no_pv": "NO PV",
+          "pv1": "PV1",
+          "pv2": "PV2",
+          "pv3": "PV3",
+          "pv1_pv2": "PV1 & PV2",
+          "pv1_pv3": "PV1 & PV3",
+          "pv2_pv3": "PV2 & PV3",
+          "pv1_pv2_pv3": "PV1 & PV2 & PV3"
+        }
+      }
+    }
+  },
+  "services": {
+    "refresh_data": {
+      "name": "Aggiorna Dati",
+      "description": "Forza un aggiornamento immediato dei dati del dispositivo dall'API {brand_name}, bypassando l'intervallo di polling normale.",
+      "fields": {
+        "entry_id": {
+          "name": "ID Voce Configurazione",
+          "description": "L'ID della voce di configurazione da aggiornare. Se non fornito, tutte le integrazioni {brand_name} Web Monitor verranno aggiornate."
+        }
+      }
+    },
+    "reconcile_history": {
+      "name": "Riconcilia cronologia energetica",
+      "description": "Colmare le statistiche energetiche mancanti dall'API cloud {brand_name}. Questo servizio recupera i dati energetici storici e li importa nel database delle statistiche di Home Assistant per eventuali lacune nella cronologia dei sensori energetici. Richiede credenziali cloud (modalità di connessione HTTP o ibrida).",
+      "fields": {
+        "lookback_hours": {
+          "name": "Ore di retrospettiva",
+          "description": "Numero di ore da esaminare per lacune nelle statistiche energetiche. Il valore predefinito è 48 ore."
+        },
+        "start_date": {
+          "name": "Data di inizio",
+          "description": "Data di inizio esplicita per la riconciliazione (formato AAAA-MM-GG). Se fornita, è richiesta anche end_date."
+        },
+        "end_date": {
+          "name": "Data di fine",
+          "description": "Data di fine esplicita per la riconciliazione (formato AAAA-MM-GG). Se fornita, è richiesta anche start_date."
+        },
+        "entry_id": {
+          "name": "ID voce di configurazione",
+          "description": "L'ID della voce di configurazione da riconciliare. Se non fornito, verranno riconciliate tutte le integrazioni {brand_name} Web Monitor con credenziali cloud."
+        }
+      }
+    }
+  },
+  "exceptions": {
+    "entry_not_found": {
+      "message": "Voce di configurazione {entry_id} non trovata. Verifica che l'ID della voce sia corretto."
+    },
+    "entry_not_loaded": {
+      "message": "La voce di configurazione {entry_id} non e caricata. Assicurati che l'integrazione sia configurata correttamente e in esecuzione."
+    },
+    "no_coordinators": {
+      "message": "Nessun coordinatore {brand_name} trovato da aggiornare. Assicurati che almeno un'integrazione {brand_name} Web Monitor sia configurata e caricata."
+    },
+    "invalid_date_format": {
+      "message": "Formato data non valido. Utilizzare il formato AAAA-MM-GG."
+    }
+  },
+  "issues": {
+    "dongle_validation_disabled": {
+      "title": "Validazione dati consigliata per WiFi dongle",
+      "description": "Un WiFi dongle è configurato ma la **Validazione dati** è disabilitata. I WiFi dongle condividono un bus Modbus e le letture simultanee possono causare dati di registro corrotti (es. picchi di energia).\n\nPer risolvere, andare in **Impostazioni > Dispositivi e servizi > EG4 Web Monitor > Configura** e abilitare la **Validazione dati**."
+    }
+  }
+}

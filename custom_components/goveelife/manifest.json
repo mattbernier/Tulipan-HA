@@ -1,0 +1,12 @@
+{
+  "domain": "goveelife",
+  "name": "Govee Life",
+  "codeowners": ["@disforw"],
+  "config_flow": true,
+  "dependencies": ["diagnostics", "sensor"],
+  "documentation": "https://github.com/disforw/goveelife",
+  "iot_class": "cloud_polling",
+  "issue_tracker": "https://github.com/disforw/goveelife/issues",
+  "requirements": ["aiohttp>=3.9.0"],
+  "version": "4.1.0"
+}

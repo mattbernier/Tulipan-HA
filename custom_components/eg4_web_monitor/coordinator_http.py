@@ -1,0 +1,848 @@
+"""HTTP/cloud update mixin for EG4 Web Monitor coordinator.
+
+This mixin handles all HTTP cloud API data fetching and processing,
+including hybrid mode (local transport + cloud API fallback).
+
+Methods rely on coordinator attributes (self.client, self.station,
+self._http_polling_interval, etc.) accessed via mixin protocol.
+"""
+
+import asyncio
+import logging
+import time as _time
+from datetime import timedelta
+from typing import TYPE_CHECKING, Any
+
+from homeassistant.exceptions import ConfigEntryAuthFailed
+from homeassistant.util import dt as dt_util
+
+if TYPE_CHECKING:
+    from homeassistant.helpers.update_coordinator import UpdateFailed
+
+    from pylxpweb.devices.inverters.base import BaseInverter
+else:
+    from homeassistant.helpers.update_coordinator import UpdateFailed  # type: ignore[assignment]
+
+from pylxpweb.devices import Station
+from pylxpweb.exceptions import (
+    LuxpowerAPIError,
+    LuxpowerAuthError,
+    LuxpowerConnectionError,
+)
+
+from .const import (
+    CONNECTION_TYPE_HTTP,
+    CONNECTION_TYPE_HYBRID,
+    DOMAIN,
+)
+from .coordinator_mappings import (
+    _build_individual_battery_mapping,
+    _get_transport_label,
+    compute_parallel_group_charge_rate,
+)
+from .coordinator_mixins import (
+    _MixinBase,
+    apply_gridboss_overlay,
+    compute_total_inverter_power_kw,
+)
+from .utils import clean_battery_display_name
+
+_LOGGER = logging.getLogger(__name__)
+
+
+class HTTPUpdateMixin(_MixinBase):
+    """Mixin providing HTTP/cloud data update methods for the coordinator."""
+
+    def _align_client_cache_with_http_interval(self) -> None:
+        """Set client cache TTLs to match HTTP polling interval.
+
+        This ensures ALL HTTP API calls respect the configured HTTP polling
+        rate. In hybrid mode, local transport bypasses these caches entirely.
+        In HTTP-only mode the coordinator interval already controls the rate,
+        but we still align caches as a safety net.
+        """
+        if self.client is None:
+            return
+        http_ttl = timedelta(seconds=self._http_polling_interval)
+        for key in (
+            "battery_info",
+            "midbox_runtime",
+            "quick_charge_status",
+            "inverter_runtime",
+            "inverter_energy",
+            "parameter_read",
+        ):
+            self.client._cache_ttl_config[key] = http_ttl
+
+    def _should_poll_hybrid_local(self) -> bool:
+        """Check if the dongle transport interval has elapsed for MID refresh.
+
+        In HYBRID mode, MID devices (GridBOSS) are refreshed via WiFi dongle.
+        This method gates MID refresh specifically on the dongle interval,
+        not on any transport.  Evaluates ALL transport types so monotonic
+        timestamps are stamped for each (pre-compute pattern from cc8d4e2).
+        """
+        if not self._local_transport_configs:
+            return True  # No local transports -> always refresh (HTTP-only fallback)
+        unique_types = {
+            c.get("transport_type", "modbus_tcp") for c in self._local_transport_configs
+        }
+        # Eagerly evaluate ALL types so every transport's monotonic timestamp
+        # is stamped even when an earlier one is True.
+        results = {tt: self._should_poll_transport(tt) for tt in unique_types}
+        # MID device is on the dongle — gate its refresh by dongle interval.
+        # If no dongle transport exists, fall back to any-transport-ready.
+        if "wifi_dongle" in results:
+            should_poll = results["wifi_dongle"]
+            _LOGGER.debug(
+                "HYBRID poll gate: transports=%s, dongle_ready=%s",
+                results,
+                should_poll,
+            )
+            return should_poll
+        return any(results.values())
+
+    async def _refresh_station_devices(self, include_mid: bool = True) -> None:
+        """Refresh station devices, serializing by transport endpoint.
+
+        WiFi dongles are simple embedded devices that cannot handle concurrent
+        Modbus TCP connections reliably.  When multiple devices (inverters +
+        GridBOSS) share the same dongle, concurrent ``asyncio.gather()`` calls
+        overwhelm the dongle and produce corrupt register data (voltage spikes,
+        energy value spikes).
+
+        This method groups devices by their transport endpoint (host:port) and
+        refreshes devices within the same group sequentially.  Groups on
+        different endpoints — or devices without local transports — are still
+        refreshed concurrently.
+
+        Falls back to ``station.refresh_all_data()`` when no local transports
+        are attached (pure HTTP mode), since concurrent HTTP API calls are safe.
+
+        Args:
+            include_mid: Whether to include MID/GridBOSS devices in the refresh.
+        """
+        if self.station is None:
+            return
+
+        # Fast path: no local transports → concurrent HTTP is safe
+        if not self._local_transports_attached:
+            if include_mid:
+                await self.station.refresh_all_data()
+            else:
+                tasks = [inv.refresh() for inv in self.station.all_inverters]
+                if tasks:
+                    await asyncio.gather(*tasks, return_exceptions=True)
+            return
+
+        # Group devices by transport endpoint for serialized access
+        endpoint_groups: dict[str, list[Any]] = {}
+        no_transport: list[Any] = []
+
+        all_devices: list[Any] = list(self.station.all_inverters)
+        if include_mid:
+            all_devices.extend(self.station.all_mid_devices)
+
+        for device in all_devices:
+            transport = getattr(device, "_transport", None)
+            if transport is None:
+                no_transport.append(device)
+                continue
+            host = getattr(transport, "_host", "")
+            port = getattr(transport, "_port", 0)
+            endpoint = f"{host}:{port}"
+            endpoint_groups.setdefault(endpoint, []).append(device)
+
+        async def _refresh_group_sequentially(devices: list[Any]) -> None:
+            """Refresh devices on the same endpoint one at a time."""
+            for device in devices:
+                try:
+                    await device.refresh()
+                except Exception as exc:
+                    _LOGGER.debug(
+                        "Device %s refresh failed: %s",
+                        getattr(device, "serial_number", "?"),
+                        exc,
+                    )
+
+        # Build concurrent coroutines:
+        #  - Each endpoint group is one sequential coroutine
+        #  - Cloud-only devices (no transport) refresh concurrently
+        coros: list[Any] = []
+        for endpoint, devices in endpoint_groups.items():
+            _LOGGER.debug(
+                "HYBRID: Serializing %d device(s) on endpoint %s",
+                len(devices),
+                endpoint,
+            )
+            coros.append(_refresh_group_sequentially(devices))
+
+        # Cloud-only devices can refresh concurrently (HTTP API)
+        for device in no_transport:
+            coros.append(device.refresh())
+
+        if coros:
+            await asyncio.gather(*coros, return_exceptions=True)
+
+    async def _async_update_hybrid_data(self) -> dict[str, Any]:
+        """Fetch data using library transport routing (local + cloud).
+
+        When local transports are attached via Station.attach_local_transports(),
+        inverter.refresh() automatically routes runtime/energy through the local
+        transport and battery data through the cloud API. Internal cache TTLs
+        prevent redundant calls. This method simply delegates to the HTTP path
+        and overrides the connection type label.
+
+        Returns:
+            Dictionary containing device data with transport-aware labels.
+        """
+        include_mid = self._should_poll_hybrid_local()
+        data = await self._async_update_http_data(
+            include_mid_refresh=include_mid,
+        )
+        data["connection_type"] = CONNECTION_TYPE_HYBRID
+
+        # Set transport labels per device based on attached transports
+        # In hybrid mode, devices are in the station object, not local caches
+        for serial, device_data in data.get("devices", {}).items():
+            if "sensors" not in device_data:
+                continue
+            if device_data.get("type") == "parallel_group":
+                continue
+            # Look up device from station (hybrid mode) or local caches (fallback)
+            device: Any = None
+            if self.station:
+                # Check station inverters
+                for inv in self.station.all_inverters:
+                    if inv.serial_number == serial:
+                        device = inv
+                        break
+                # Check station MID devices
+                if device is None:
+                    for mid in self.station.all_mid_devices:
+                        if mid.serial_number == serial:
+                            device = mid
+                            break
+            # Fallback to local caches
+            if device is None:
+                device = self._inverter_cache.get(serial) or self._mid_device_cache.get(
+                    serial
+                )
+            transport = getattr(device, "_transport", None) if device else None
+            if transport is not None:
+                transport_type = getattr(transport, "transport_type", "local")
+                label = _get_transport_label(transport_type)
+                device_data["sensors"]["connection_transport"] = f"Hybrid ({label})"
+                if hasattr(transport, "host"):
+                    device_data["sensors"]["transport_host"] = transport.host
+            else:
+                device_data["sensors"]["connection_transport"] = "Cloud"
+
+        return data
+
+    async def _async_update_http_data(
+        self,
+        include_mid_refresh: bool = True,
+    ) -> dict[str, Any]:
+        """Fetch data from HTTP cloud API using device objects.
+
+        This is the original HTTP-based update method using LuxpowerClient
+        and Station/Inverter device objects.
+
+        Args:
+            include_mid_refresh: When True (default), refresh all devices
+                including MID/GridBOSS via station.refresh_all_data().
+                When False (HYBRID mode, dongle interval not elapsed),
+                only refresh inverters — MID device retains data from
+                the previous cycle.
+
+        Returns:
+            Dictionary containing all device data, sensors, and station information.
+
+        Raises:
+            ConfigEntryAuthFailed: If authentication fails.
+            UpdateFailed: If connection or API errors occur.
+        """
+        if self.client is None:
+            raise UpdateFailed("HTTP client not initialized")
+
+        try:
+            _LOGGER.debug("Fetching HTTP data for plant %s", self.plant_id)
+
+            # Check if hourly parameter refresh is due
+            if self._should_refresh_parameters():
+                _LOGGER.info(
+                    "Hourly parameter refresh is due, refreshing all device parameters"
+                )
+                task = self.hass.async_create_task(self._hourly_parameter_refresh())
+                self._background_tasks.add(task)
+                task.add_done_callback(self._remove_task_from_set)
+                task.add_done_callback(self._log_task_exception)
+
+            # Load or refresh station data using device objects
+            if self.station is None:
+                _LOGGER.info("Loading station data for plant %s", self.plant_id)
+                assert self.plant_id is not None
+                self.station = await Station.load(self.client, int(self.plant_id))
+                _LOGGER.debug(
+                    "Refreshing all data after station load to populate battery details"
+                )
+                await self.station.refresh_all_data()
+                # Build inverter cache for O(1) lookups
+                self._rebuild_inverter_cache()
+
+                # Align client cache TTLs with HTTP polling interval
+                self._align_client_cache_with_http_interval()
+
+                # For hybrid mode: Attach local transports to devices (new API)
+                # This enables devices to use local transport with HTTP fallback
+                if (
+                    self.connection_type == CONNECTION_TYPE_HYBRID
+                    and self._local_transport_configs
+                    and not self._local_transports_attached
+                ):
+                    await self._attach_local_transports_to_station()
+            else:
+                if include_mid_refresh:
+                    _LOGGER.debug(
+                        "Refreshing all station data for plant %s", self.plant_id
+                    )
+                    await self._refresh_station_devices(include_mid=True)
+                else:
+                    _LOGGER.debug(
+                        "Refreshing inverters only for plant %s "
+                        "(MID dongle interval not elapsed)",
+                        self.plant_id,
+                    )
+                    await self._refresh_station_devices(include_mid=False)
+
+            # Log inverter data status after refresh
+            for inverter in self.station.all_inverters:
+                battery_bank = getattr(inverter, "_battery_bank", None)
+                battery_count = 0
+                battery_array_len = 0
+                if battery_bank:
+                    battery_count = getattr(battery_bank, "battery_count", 0)
+                    batteries = getattr(battery_bank, "batteries", [])
+                    battery_array_len = len(batteries) if batteries else 0
+                _LOGGER.debug(
+                    "Inverter %s (%s): has_data=%s, _runtime=%s, _energy=%s, "
+                    "_battery_bank=%s, battery_count=%s, batteries_len=%s",
+                    inverter.serial_number,
+                    getattr(inverter, "model", "Unknown"),
+                    inverter.has_data,
+                    "present"
+                    if getattr(inverter, "_runtime", None) is not None
+                    else "None",
+                    "present"
+                    if getattr(inverter, "_energy", None) is not None
+                    else "None",
+                    "present" if battery_bank else "None",
+                    battery_count,
+                    battery_array_len,
+                )
+
+            # Perform DST sync if enabled and due
+            if self.dst_sync_enabled and self.station and self._should_sync_dst():
+                await self._perform_dst_sync()
+
+            # Process and structure the device data
+            processed_data = await self._process_station_data()
+            processed_data["connection_type"] = CONNECTION_TYPE_HTTP
+
+            # Set transport label for all devices (skip virtual devices)
+            for device_data in processed_data.get("devices", {}).values():
+                if (
+                    "sensors" in device_data
+                    and device_data.get("type") != "parallel_group"
+                ):
+                    device_data["sensors"]["connection_transport"] = "Cloud"
+
+            device_count = len(processed_data.get("devices", {}))
+            _LOGGER.debug("Successfully updated data for %d devices", device_count)
+
+            # Silver tier requirement: Log when service becomes available again
+            if not self._last_available_state:
+                _LOGGER.warning(
+                    "EG4 Web Monitor service reconnected successfully for plant %s",
+                    self.plant_id,
+                )
+                self._last_available_state = True
+
+            return processed_data
+
+        except LuxpowerAuthError as e:
+            if self._last_available_state:
+                _LOGGER.warning(
+                    "EG4 Web Monitor service unavailable due to authentication error for plant %s: %s",
+                    self.plant_id,
+                    e,
+                )
+                self._last_available_state = False
+            _LOGGER.error("Authentication error: %s", e)
+            raise ConfigEntryAuthFailed(f"Authentication failed: {e}") from e
+
+        except LuxpowerConnectionError as e:
+            if self._last_available_state:
+                _LOGGER.warning(
+                    "EG4 Web Monitor service unavailable due to connection error for plant %s: %s",
+                    self.plant_id,
+                    e,
+                )
+                self._last_available_state = False
+            _LOGGER.error("Connection error: %s", e)
+            raise UpdateFailed(f"Connection failed: {e}") from e
+
+        except LuxpowerAPIError as e:
+            if self._last_available_state:
+                _LOGGER.warning(
+                    "EG4 Web Monitor service unavailable due to API error for plant %s: %s",
+                    self.plant_id,
+                    e,
+                )
+                self._last_available_state = False
+            _LOGGER.error("API error: %s", e)
+            raise UpdateFailed(f"API error: {e}") from e
+
+        except Exception as e:
+            if self._last_available_state:
+                _LOGGER.warning(
+                    "EG4 Web Monitor service unavailable due to unexpected error for plant %s: %s",
+                    self.plant_id,
+                    e,
+                )
+                self._last_available_state = False
+            _LOGGER.exception("Unexpected error updating data: %s", e)
+            raise UpdateFailed(f"Unexpected error: {e}") from e
+
+    async def _process_station_data(self) -> dict[str, Any]:
+        """Process station data using device objects."""
+        if not self.station:
+            raise UpdateFailed("Station not loaded")
+
+        processed: dict[str, Any] = {
+            "plant_id": self.plant_id,
+            "devices": {},
+            "device_info": {},
+            "last_update": dt_util.utcnow(),
+        }
+
+        # Preserve existing parameter data from previous updates
+        if self.data and "parameters" in self.data:
+            processed["parameters"] = self.data["parameters"]
+
+        # Add station data
+        processed["station"] = {
+            "name": self.station.name,
+            "plant_id": self.station.id,
+            "station_last_polled": dt_util.utcnow(),
+        }
+
+        if timezone := getattr(self.station, "timezone", None):
+            processed["station"]["timezone"] = timezone
+
+        if location := getattr(self.station, "location", None):
+            if country := getattr(location, "country", None):
+                processed["station"]["country"] = country
+            if address := getattr(location, "address", None):
+                processed["station"]["address"] = address
+
+        if created_date := getattr(self.station, "created_date", None):
+            processed["station"]["createDate"] = created_date.isoformat()
+
+        # API metrics from client — only tracked when an HTTP client exists
+        if self.client is not None:
+            processed["station"]["api_request_rate"] = (
+                self.client.api_requests_last_hour
+            )
+            processed["station"]["api_peak_request_rate"] = (
+                self.client.api_peak_rate_per_hour
+            )
+
+            # Daily counter: offset (pre-reload total) + client's count since reload.
+            # Persisted in hass.data to survive config entry reloads.
+            today_ymd = _time.localtime()[:3]
+            if today_ymd != self._daily_api_ymd:
+                self._daily_api_offset = 0
+                self._daily_api_ymd = today_ymd
+            total_today = self._daily_api_offset + self.client.api_requests_today
+            processed["station"]["api_requests_today"] = total_today
+            self.hass.data[f"{DOMAIN}_daily_api_count_{self.plant_id}"] = {
+                "count": total_today,
+                "ymd": today_ymd,
+            }
+
+        # Process all inverters concurrently with semaphore to prevent rate limiting
+        async def process_inverter_with_semaphore(
+            inv: "BaseInverter",
+        ) -> tuple[str, dict[str, Any]]:
+            """Process a single inverter with semaphore protection."""
+            async with self._api_semaphore:
+                try:
+                    result = await self._process_inverter_object(inv)
+                    return (inv.serial_number, result)
+                except Exception as e:
+                    _LOGGER.exception(
+                        "Error processing inverter %s: %s", inv.serial_number, e
+                    )
+                    return (
+                        inv.serial_number,
+                        {
+                            "type": "unknown",
+                            "model": "Unknown",
+                            "error": str(e),
+                            "sensors": {},
+                            "batteries": {},
+                        },
+                    )
+
+        # Process all inverters concurrently (max 3 at a time via semaphore)
+        inverter_tasks = [
+            process_inverter_with_semaphore(inv) for inv in self.station.all_inverters
+        ]
+        inverter_results = await asyncio.gather(*inverter_tasks)
+
+        # Populate processed devices from results
+        for serial, device_data in inverter_results:
+            processed["devices"][serial] = device_data
+
+        # Propagate total inverter power rating to MID devices (one-time).
+        # Features are detected inside _process_inverter_object(), so the
+        # ratings become available only after the first inverter processing.
+        if self.station.all_mid_devices and not getattr(
+            self, "_mid_power_rating_set", False
+        ):
+            total_kw = compute_total_inverter_power_kw(self.station.all_inverters)
+            if total_kw > 0:
+                for mid in self.station.all_mid_devices:
+                    mid.set_max_system_power(total_kw)
+                self._mid_power_rating_set = True
+                _LOGGER.info(
+                    "Set max system power %.1f kW on %d MID device(s)",
+                    total_kw,
+                    len(self.station.all_mid_devices),
+                )
+
+        # Process parallel group data if available
+        if hasattr(self.station, "parallel_groups") and self.station.parallel_groups:
+            groups = self.station.parallel_groups
+            _LOGGER.debug("Processing %d parallel groups", len(groups))
+
+            # Refresh PG energy data.
+            # When inverters have local transport, energy is computed from
+            # inverter data (no cloud call). Otherwise, throttle cloud API
+            # to 60s intervals since energy data changes slowly.
+            has_local = any(
+                group._has_local_energy() for group in groups if group.inverters
+            )
+
+            if has_local:
+                # Local computation — cheap, run every cycle
+                energy_tasks = []
+                for group in groups:
+                    if group.inverters:
+                        energy_tasks.append(
+                            group._fetch_energy_data(group.inverters[0].serial_number)
+                        )
+                if energy_tasks:
+                    await asyncio.gather(*energy_tasks, return_exceptions=True)
+            else:
+                # Cloud API — throttle to 60s intervals
+                _PG_ENERGY_INTERVAL = 60  # seconds
+                now_mono = _time.monotonic()
+                last_pg = getattr(self, "_last_pg_energy_fetch", 0.0)
+                if now_mono - last_pg >= _PG_ENERGY_INTERVAL:
+                    energy_tasks = []
+                    for group in groups:
+                        if group.inverters:
+                            energy_tasks.append(
+                                group._fetch_energy_data(
+                                    group.inverters[0].serial_number
+                                )
+                            )
+                    if energy_tasks:
+                        await asyncio.gather(*energy_tasks, return_exceptions=True)
+                    self._last_pg_energy_fetch = now_mono
+
+            for group in groups:
+                try:
+                    _LOGGER.debug(
+                        "Parallel group %s: energy=%s, today_yielding=%.2f kWh",
+                        group.name,
+                        group._energy is not None,
+                        group.today_yielding,
+                    )
+
+                    group_data = await self._process_parallel_group_object(group)
+                    _LOGGER.debug(
+                        "Parallel group %s sensors: %s",
+                        group.name,
+                        list(group_data.get("sensors", {}).keys()),
+                    )
+                    processed["devices"][f"parallel_group_{group.name.lower()}"] = (
+                        group_data
+                    )
+
+                    # Aggregate member inverter battery data for parallel group.
+                    # Single pass collects both battery count (override when
+                    # cloud returns 0) and battery current sum.
+                    pg_sensors = group_data.get("sensors", {})
+                    need_bat_count = pg_sensors.get("parallel_battery_count", 0) == 0
+                    total_bats = 0
+                    total_current = 0.0
+                    has_current = False
+                    for inv in getattr(group, "inverters", []):
+                        inv_serial = getattr(inv, "serial_number", None)
+                        if not inv_serial:
+                            continue
+                        inv_sensors = (
+                            processed["devices"].get(inv_serial, {}).get("sensors", {})
+                        )
+                        if need_bat_count:
+                            bat_count = inv_sensors.get("battery_bank_count")
+                            if bat_count is not None and bat_count > 0:
+                                total_bats += bat_count
+                        current = inv_sensors.get("battery_bank_current")
+                        if current is not None:
+                            total_current += float(current)
+                            has_current = True
+                    if need_bat_count and total_bats > 0:
+                        pg_sensors["parallel_battery_count"] = total_bats
+                    if has_current:
+                        pg_sensors["parallel_battery_current"] = total_current
+
+                    # Compute parallel group charge/discharge C-rates (%/h)
+                    compute_parallel_group_charge_rate(pg_sensors)
+
+                    if hasattr(group, "mid_device") and group.mid_device:
+                        try:
+                            mid_data = await self._process_mid_device_object(
+                                group.mid_device
+                            )
+                            processed["devices"][group.mid_device.serial_number] = (
+                                mid_data
+                            )
+
+                            # Apply GridBOSS CT overlay to parallel group.
+                            # GridBOSS CTs are the authoritative source for
+                            # grid and consumption measurements — inverter
+                            # register sums are internal estimates that diverge
+                            # from actual panel readings.  This mirrors the
+                            # overlay in _process_local_parallel_groups().
+                            apply_gridboss_overlay(
+                                group_data.get("sensors", {}),
+                                mid_data.get("sensors", {}),
+                                group.name,
+                            )
+
+                        except Exception as e:
+                            _LOGGER.error(
+                                "Error processing MID device %s: %s",
+                                group.mid_device.serial_number,
+                                e,
+                            )
+                except Exception as e:
+                    _LOGGER.error("Error processing parallel group: %s", e)
+
+        # Process standalone MID devices (GridBOSS without inverters) - fixes #86
+        if hasattr(self.station, "standalone_mid_devices"):
+            for mid_device in self.station.standalone_mid_devices:
+                try:
+                    processed["devices"][
+                        mid_device.serial_number
+                    ] = await self._process_mid_device_object(mid_device)
+                    _LOGGER.debug(
+                        "Processed standalone MID device %s",
+                        mid_device.serial_number,
+                    )
+                except Exception as e:
+                    _LOGGER.error(
+                        "Error processing standalone MID device %s: %s",
+                        mid_device.serial_number,
+                        e,
+                    )
+
+        # Process batteries through inverter hierarchy (fixes #76)
+        # This approach uses the known parent serial from the inverter object,
+        # rather than trying to parse it from batteryKey (which may not contain it)
+        for serial, device_data in processed["devices"].items():
+            if device_data.get("type") != "inverter":
+                continue
+
+            inverter = self.get_inverter_object(serial)
+            if not inverter:
+                _LOGGER.debug("No inverter object found for serial %s", serial)
+                continue
+
+            # Get cloud battery metadata (already cached, no API call)
+            battery_bank = getattr(inverter, "_battery_bank", None)
+            cloud_batteries = (
+                getattr(battery_bank, "batteries", None) if battery_bank else None
+            )
+
+            # Get transport battery data (local Modbus real-time values)
+            transport_battery = getattr(inverter, "_transport_battery", None)
+            transport_batteries = (
+                transport_battery.batteries
+                if transport_battery and hasattr(transport_battery, "batteries")
+                else None
+            )
+
+            # HYBRID MODE: Merge cloud metadata with transport real-time data
+            # Cloud provides: model, serial_number, bms_model, battery_type_text
+            # Transport provides: fresh voltage, current, SOC, cell voltages, temps
+            #
+            # Transport battery slots use round-robin: firmware rotates which
+            # physical batteries appear in the fixed register slots each poll.
+            # Match transport → cloud by serial number (not slot index).
+            if transport_batteries and cloud_batteries:
+                if "batteries" not in device_data:
+                    device_data["batteries"] = {}
+
+                # Build lookup of cloud batteries by serial for merging
+                cloud_by_serial: dict[str, tuple[int, Any]] = {}
+                for cloud_batt in cloud_batteries:
+                    c_sn = getattr(cloud_batt, "battery_sn", "") or ""
+                    c_idx = getattr(cloud_batt, "battery_index", None)
+                    if c_sn and c_idx is not None:
+                        cloud_by_serial[c_sn] = (c_idx, cloud_batt)
+
+                # First, populate all cloud batteries as baseline
+                for cloud_batt in cloud_batteries:
+                    c_idx = getattr(cloud_batt, "battery_index", None)
+                    if c_idx is None:
+                        continue
+                    battery_key = f"{serial}-{c_idx + 1:02d}"
+                    device_data["batteries"][battery_key] = (
+                        _build_individual_battery_mapping(cloud_batt)
+                    )
+
+                # Overlay transport real-time data matched by serial
+                transport_matched = 0
+                for batt in transport_batteries:
+                    if batt.voltage is None and batt.soc is None:
+                        continue
+                    bat_serial: str = getattr(batt, "serial_number", "") or ""
+                    if not bat_serial or bat_serial not in cloud_by_serial:
+                        continue
+                    cloud_idx, cloud_batt = cloud_by_serial[bat_serial]
+                    battery_key = f"{serial}-{cloud_idx + 1:02d}"
+                    # Transport data overwrites cloud for real-time values
+                    battery_sensors = _build_individual_battery_mapping(batt)
+                    # Preserve cloud-only metadata
+                    if hasattr(cloud_batt, "battery_sn") and cloud_batt.battery_sn:
+                        battery_sensors["battery_serial_number"] = cloud_batt.battery_sn
+                    if hasattr(cloud_batt, "model") and cloud_batt.model:
+                        battery_sensors["battery_model"] = cloud_batt.model
+                    if hasattr(cloud_batt, "bms_model") and cloud_batt.bms_model:
+                        battery_sensors["battery_bms_model"] = cloud_batt.bms_model
+                    if (
+                        hasattr(cloud_batt, "battery_type_text")
+                        and cloud_batt.battery_type_text
+                    ):
+                        battery_sensors["battery_type_text"] = (
+                            cloud_batt.battery_type_text
+                        )
+                    device_data["batteries"][battery_key] = battery_sensors
+                    transport_matched += 1
+
+                _LOGGER.debug(
+                    "HYBRID: %d batteries for %s (%d with live transport data)",
+                    len(device_data.get("batteries", {})),
+                    serial,
+                    transport_matched,
+                )
+                continue
+
+            # LOCAL-ONLY: Use transport battery data without cloud metadata.
+            # Round-robin merge: accumulate by battery serial across polls.
+            if transport_batteries:
+                device_data["batteries"] = self._merge_round_robin_batteries(
+                    serial, list(transport_batteries)
+                )
+                _LOGGER.debug(
+                    "LOCAL: %d individual batteries for %s (round-robin cache)",
+                    len(device_data.get("batteries", {})),
+                    serial,
+                )
+                continue
+
+            # CLOUD-ONLY: Fall back to cloud battery_bank
+            if not battery_bank:
+                _LOGGER.debug(
+                    "No battery_bank for inverter %s (battery_bank=%s)",
+                    serial,
+                    battery_bank,
+                )
+                continue
+
+            batteries = getattr(battery_bank, "batteries", None)
+            if not batteries:
+                _LOGGER.debug(
+                    "No batteries in battery_bank for inverter %s (batteries=%s, "
+                    "battery_bank.data=%s)",
+                    serial,
+                    batteries,
+                    getattr(battery_bank, "data", None),
+                )
+                continue
+
+            _LOGGER.debug("Found %d batteries for inverter %s", len(batteries), serial)
+
+            for battery in batteries:
+                try:
+                    battery_key = clean_battery_display_name(
+                        getattr(
+                            battery,
+                            "battery_key",
+                            f"BAT{battery.battery_index:03d}",
+                        ),
+                        serial,  # Parent serial is known from inverter iteration
+                    )
+                    battery_sensors = self._extract_battery_from_object(battery)
+                    battery_sensors["battery_last_polled"] = dt_util.utcnow()
+                    battery_sensors["battery_last_seen"] = dt_util.utcnow()
+
+                    if "batteries" not in device_data:
+                        device_data["batteries"] = {}
+                    device_data["batteries"][battery_key] = battery_sensors
+
+                    _LOGGER.debug(
+                        "Processed battery %s for inverter %s",
+                        battery_key,
+                        serial,
+                    )
+                except Exception as e:
+                    _LOGGER.error(
+                        "Error processing battery %s for inverter %s: %s",
+                        getattr(battery, "battery_sn", "unknown"),
+                        serial,
+                        e,
+                    )
+
+        # Check if we need to refresh parameters for any inverters
+        if "parameters" not in processed:
+            processed["parameters"] = {}
+
+        inverters_needing_params = []
+        for serial, device_data in processed["devices"].items():
+            if (
+                device_data.get("type") == "inverter"
+                and serial not in processed["parameters"]
+            ):
+                inverters_needing_params.append(serial)
+
+        if inverters_needing_params:
+            _LOGGER.info(
+                "Refreshing parameters for %d new inverters: %s",
+                len(inverters_needing_params),
+                inverters_needing_params,
+            )
+            task = self.hass.async_create_task(
+                self._refresh_missing_parameters(inverters_needing_params, processed)
+            )
+            self._background_tasks.add(task)
+            task.add_done_callback(self._remove_task_from_set)
+            task.add_done_callback(self._log_task_exception)
+
+        return processed

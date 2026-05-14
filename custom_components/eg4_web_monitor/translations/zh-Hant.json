@@ -1,0 +1,770 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "EG4 Web Monitor 設定",
+        "description": "連接您的 EG4 雲端帳戶以獲取所有功能，包括 GridBOSS、快速充電和韌體更新。您可以稍後新增本機裝置以實現更快的輪詢。",
+        "menu_options": {
+          "cloud_credentials": "連接雲端帳戶",
+          "local_device_type": "略過 — 僅本機"
+        }
+      },
+      "cloud_credentials": {
+        "title": "{brand_name} 雲端 API 憑證",
+        "description": "連接到您的 {brand_name} Web Monitor 帳戶，管理您的太陽能逆變器、GridBOSS 裝置和電池系統。",
+        "data": {
+          "username": "使用者名稱",
+          "password": "密碼",
+          "base_url": "基礎 URL",
+          "verify_ssl": "驗證 SSL 憑證",
+          "dst_sync": "夏令時間同步"
+        },
+        "data_description": {
+          "username": "您的 {brand_name} Web Monitor 帳戶使用者名稱",
+          "password": "您的 {brand_name} Web Monitor 帳戶密碼",
+          "base_url": "{brand_name} Web Monitor API 的基礎 URL",
+          "verify_ssl": "啟用 SSL 憑證驗證以確保安全連線",
+          "dst_sync": "根據您的 Home Assistant 時區自動同步逆變器的夏令時間設定"
+        }
+      },
+      "cloud_station": {
+        "title": "選擇電站",
+        "description": "選擇要監控的太陽能電站/電廠。",
+        "data": {
+          "plant_id": "電站/電廠"
+        },
+        "data_description": {
+          "plant_id": "選擇您要監控的太陽能安裝系統"
+        }
+      },
+      "cloud_add_local": {
+        "title": "新增本機裝置？",
+        "description": "您的雲端連線已就緒。您可以選擇新增本機裝置以實現更快的輪詢（透過 Modbus/Dongle 5秒更新，而雲端輪詢為30秒）。",
+        "menu_options": {
+          "local_device_type": "新增本機裝置",
+          "cloud_finish": "完成（僅雲端）"
+        }
+      },
+      "local_device_type": {
+        "title": "選擇裝置連線方式",
+        "description": "選擇您的裝置如何在本機連線。",
+        "menu_options": {
+          "network_scan_config": "掃描網路（自動發現）",
+          "local_modbus": "Modbus TCP（手動輸入）",
+          "local_serial": "USB 序列埠（RS485 轉接器）",
+          "local_dongle": "WiFi Dongle（手動輸入）"
+        }
+      },
+      "network_scan_config": {
+        "title": "網路掃描設定",
+        "description": "掃描本機網路以尋找 {brand_name} 裝置。Modbus 裝置（連接埠 502）可完全識別。WiFi Dongle 候選裝置（連接埠 8000）需要您之後輸入序號。",
+        "data": {
+          "ip_range": "IP 範圍（CIDR）",
+          "scan_modbus": "掃描 Modbus TCP（連接埠 502）",
+          "scan_dongle": "掃描 WiFi Dongle（連接埠 8000）",
+          "timeout": "連線逾時（秒）"
+        },
+        "data_description": {
+          "ip_range": "CIDR 表示法的網路範圍（例如 192.168.1.0/24）。從您的 Home Assistant 網路自動偵測。",
+          "timeout": "等待每個裝置回應的時間。較低 = 更快掃描，較高 = 更可靠。"
+        }
+      },
+      "network_scan_progress": {
+        "title": "正在掃描網路...",
+        "description": "正在掃描本機網路以尋找 {brand_name} 裝置。這可能需要一些時間。"
+      },
+      "network_scan_results": {
+        "title": "找到 {device_count} 個裝置",
+        "description": "從掃描結果中選擇裝置（已掃描 {scanned_range}）。Modbus 裝置已完全識別。Dongle 候選裝置需要在下一畫面輸入序號。",
+        "data": {
+          "device": "選擇裝置"
+        }
+      },
+      "network_scan_empty": {
+        "title": "未找到裝置",
+        "description": "網路掃描 {scanned_range} 未找到 {brand_name} 裝置。您可以手動輸入連線詳情。",
+        "menu_options": {
+          "local_modbus": "手動輸入 Modbus",
+          "local_dongle": "手動輸入 Dongle"
+        }
+      },
+      "local_modbus": {
+        "title": "透過 Modbus TCP 連線",
+        "description": "輸入您的 Modbus TCP 閘道的 IP 位址。裝置序號、型號和韌體會自動偵測。",
+        "data": {
+          "modbus_host": "閘道 IP 位址",
+          "modbus_port": "連接埠",
+          "modbus_unit_id": "單元 ID"
+        },
+        "data_description": {
+          "modbus_host": "您的 RS485 轉乙太網路轉接器的 IP 位址（例如 192.168.1.100）",
+          "modbus_port": "TCP 連接埠（預設：502）",
+          "modbus_unit_id": "Modbus 從站 ID（預設：1）"
+        }
+      },
+      "local_dongle": {
+        "title": "透過 WiFi Dongle 連線",
+        "description": "輸入 Dongle 連線詳情。Dongle 序號印在裝置標籤上（也是 WiFi AP 名稱）。注意：最近的韌體更新可能會阻止此存取。",
+        "data": {
+          "dongle_host": "Dongle IP 位址",
+          "dongle_serial": "Dongle 序號",
+          "inverter_serial": "逆變器序號",
+          "dongle_port": "連接埠"
+        },
+        "data_description": {
+          "dongle_host": "您本機網路上 WiFi Dongle 的 IP 位址",
+          "dongle_serial": "10位 Dongle 序號（逆變器用 BJ/BA，GridBOSS 用 DJ）",
+          "inverter_serial": "裝置銘牌上的10位序號（身分驗證必需）",
+          "dongle_port": "TCP 連接埠（預設：8000）"
+        }
+      },
+      "local_serial": {
+        "title": "透過 USB 序列埠連線",
+        "description": "選擇您的 USB 轉 RS485 序列埠轉接器。裝置序號、型號和韌體會自動偵測。",
+        "data": {
+          "serial_port": "序列埠",
+          "serial_baudrate": "鮑率",
+          "serial_parity": "同位檢查",
+          "serial_stopbits": "停止位元",
+          "modbus_unit_id": "單元 ID"
+        },
+        "data_description": {
+          "serial_port": "選擇您的 USB 序列埠轉接器或手動輸入",
+          "serial_baudrate": "通訊速度（預設：19200）",
+          "serial_parity": "同位檢查位元設定（預設：無）",
+          "serial_stopbits": "停止位元數量（預設：1）",
+          "modbus_unit_id": "Modbus 從站 ID（預設：1）"
+        }
+      },
+      "local_serial_manual": {
+        "title": "輸入序列埠路徑",
+        "description": "手動輸入您的 USB 轉 RS485 序列埠轉接器的路徑。",
+        "data": {
+          "serial_port": "序列埠路徑"
+        },
+        "data_description": {
+          "serial_port": "例如 /dev/ttyUSB0 (Linux)、COM1 (Windows)、/dev/tty.usbserial-* (macOS)"
+        }
+      },
+      "local_device_confirmed": {
+        "title": "確認設備",
+        "description": "**{device_type}**: {device_model}\n**序號**: {device_serial}\n**系列**: {device_family}\n**韌體**: {device_firmware}\n**PV功率**: {device_pv_power}W | **電池SOC**: {device_battery_soc}%\n\n請選擇電網類型：",
+        "data": {
+          "grid_type": "電網類型"
+        },
+        "data_description": {
+          "grid_type": "分相用於美國120V/240V (L1/L2)，單相用於巴西220V或歐盟230V，三相用於R/S/T系統"
+        }
+      },
+      "local_device_added": {
+        "title": "設備已新增",
+        "description": "設備 #{device_count} 已成功新增。下一步操作：",
+        "menu_options": {
+          "local_device_type": "新增另一個設備",
+          "local_add_cloud": "新增雲端憑證",
+          "local_finish": "完成設定"
+        }
+      },
+      "local_finish": {
+        "title": "命名您的安裝系統",
+        "description": "為您的太陽能安裝系統起一個友善的名稱。\n\n**已設定裝置**: {device_summary}",
+        "data": {
+          "station_name": "安裝系統名稱（選填）"
+        },
+        "data_description": {
+          "station_name": "留空則使用裝置型號和序號作為名稱"
+        }
+      },
+      "reauth_confirm": {
+        "title": "重新驗證 {brand_name}",
+        "description": "您的工作階段已過期。請重新輸入密碼以恢復存取。",
+        "data": {
+          "password": "密碼"
+        },
+        "data_description": {
+          "password": "您的 {brand_name} Web Monitor 帳戶密碼"
+        }
+      },
+      "reconfigure_menu": {
+        "title": "重新設定",
+        "description": "您想變更什麼？",
+        "menu_options": {
+          "reconfigure_cloud_update": "更新雲端憑證",
+          "reconfigure_cloud_remove": "移除雲端連線",
+          "reconfigure_cloud_add": "新增雲端憑證",
+          "reconfigure_devices": "管理本機裝置"
+        }
+      },
+      "reconfigure_cloud_update": {
+        "title": "更新雲端憑證",
+        "description": "更新您的 {brand_name} Web Monitor 帳戶憑證。",
+        "data": {
+          "username": "使用者名稱",
+          "password": "密碼",
+          "base_url": "基礎 URL",
+          "verify_ssl": "驗證 SSL 憑證",
+          "dst_sync": "夏令時間同步"
+        },
+        "data_description": {
+          "username": "您的 {brand_name} Web Monitor 帳戶使用者名稱",
+          "password": "您的 {brand_name} Web Monitor 帳戶密碼",
+          "base_url": "{brand_name} Web Monitor API 的基礎 URL",
+          "verify_ssl": "啟用 SSL 憑證驗證以確保安全連線",
+          "dst_sync": "自動同步夏令時間設定"
+        }
+      },
+      "reconfigure_cloud_add": {
+        "title": "新增雲端憑證",
+        "description": "新增雲端 API 憑證以啟用電池詳情、遠端控制和裝置發現。",
+        "data": {
+          "username": "使用者名稱",
+          "password": "密碼",
+          "base_url": "基礎 URL",
+          "verify_ssl": "驗證 SSL 憑證",
+          "dst_sync": "夏令時間同步"
+        },
+        "data_description": {
+          "username": "您的 {brand_name} Web Monitor 帳戶使用者名稱",
+          "password": "您的 {brand_name} Web Monitor 帳戶密碼",
+          "base_url": "{brand_name} Web Monitor API 的基礎 URL",
+          "verify_ssl": "啟用 SSL 憑證驗證以確保安全連線",
+          "dst_sync": "自動同步夏令時間設定"
+        }
+      },
+      "reconfigure_cloud_station": {
+        "title": "變更電站",
+        "description": "選擇不同的太陽能電站/電廠進行監控。",
+        "data": {
+          "plant_id": "電站/電廠"
+        },
+        "data_description": {
+          "plant_id": "選擇您要監控的太陽能安裝系統"
+        }
+      },
+      "reconfigure_cloud_remove": {
+        "title": "移除雲端連線",
+        "description": "這將從您的設定中移除雲端憑證。您的本機裝置將繼續運作。\n\n需要雲端且將被停用的功能：\n- 快速充電開關\n- 韌體更新通知\n\n所有其他控制（電池備份、交流充電、SOC 限制等）透過 Modbus 暫存器在本機運作。",
+        "submit": "移除雲端連線"
+      },
+      "reconfigure_devices": {
+        "title": "管理本機裝置",
+        "description": "{device_list}",
+        "menu_options": {
+          "reconfigure_device_add": "新增裝置",
+          "reconfigure_device_remove": "移除裝置",
+          "reconfigure_devices_save": "儲存並關閉"
+        }
+      },
+      "reconfigure_device_remove": {
+        "title": "移除本機裝置",
+        "description": "選擇要從此設定中移除的裝置。",
+        "data": {
+          "device": "裝置"
+        }
+      },
+      "reconfigure_device_add": {
+        "title": "新增本機裝置",
+        "description": "為您的新裝置選擇連線類型。",
+        "menu_options": {
+          "network_scan_config": "掃描網路（自動發現）",
+          "reconfigure_add_modbus": "Modbus TCP（手動輸入）",
+          "reconfigure_add_serial": "USB 序列埠（RS485 轉接器）",
+          "reconfigure_add_dongle": "WiFi Dongle（手動輸入）"
+        }
+      },
+      "reconfigure_add_modbus": {
+        "title": "新增 Modbus 裝置",
+        "description": "設定新的 Modbus TCP 連線。裝置資訊會自動偵測。",
+        "data": {
+          "modbus_host": "閘道 IP 位址",
+          "modbus_port": "連接埠",
+          "modbus_unit_id": "單元 ID"
+        },
+        "data_description": {
+          "modbus_host": "您的 RS485 轉乙太網路轉接器的 IP 位址（例如 192.168.1.100）",
+          "modbus_port": "TCP 連接埠（預設：502）",
+          "modbus_unit_id": "Modbus 從站 ID（預設：1）"
+        }
+      },
+      "reconfigure_add_dongle": {
+        "title": "新增 WiFi Dongle 裝置",
+        "description": "設定新的 WiFi Dongle 連線。裝置資訊會自動偵測。",
+        "data": {
+          "dongle_host": "Dongle IP 位址",
+          "dongle_serial": "Dongle 序號",
+          "inverter_serial": "逆變器序號",
+          "dongle_port": "連接埠"
+        },
+        "data_description": {
+          "dongle_host": "您本機網路上 WiFi Dongle 的 IP 位址",
+          "dongle_serial": "10位 Dongle 序號（逆變器用 BJ/BA，GridBOSS 用 DJ）",
+          "inverter_serial": "裝置銘牌上的10位序號（身分驗證必需）",
+          "dongle_port": "TCP 連接埠（預設：8000）"
+        }
+      },
+      "reconfigure_add_serial": {
+        "title": "新增 USB 序列埠裝置",
+        "description": "設定新的 USB 轉 RS485 序列埠連線。裝置資訊會自動偵測。",
+        "data": {
+          "serial_port": "序列埠",
+          "serial_baudrate": "鮑率",
+          "serial_parity": "同位檢查",
+          "serial_stopbits": "停止位元",
+          "modbus_unit_id": "單元 ID"
+        },
+        "data_description": {
+          "serial_port": "選擇您的 USB 序列埠轉接器或手動輸入",
+          "serial_baudrate": "通訊速度（預設：19200）",
+          "serial_parity": "同位檢查位元設定（預設：無）",
+          "serial_stopbits": "停止位元數量（預設：1）",
+          "modbus_unit_id": "Modbus 從站 ID（預設：1）"
+        }
+      },
+      "reconfigure_add_serial_manual": {
+        "title": "輸入序列埠路徑",
+        "description": "手動輸入您的 USB 轉 RS485 序列埠轉接器的路徑。",
+        "data": {
+          "serial_port": "序列埠路徑"
+        },
+        "data_description": {
+          "serial_port": "例如 /dev/ttyUSB0 (Linux)、COM1 (Windows)、/dev/tty.usbserial-* (macOS)"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "無法連線到 {brand_name} Web Monitor。請檢查您的網路連線並重試。",
+      "invalid_auth": "使用者名稱或密碼無效。請檢查您的憑證並重試。",
+      "unknown": "發生意外錯誤。請重試或檢視日誌以獲取更多詳情。",
+      "no_plants": "在您的帳戶中未找到太陽能電站/電廠。請確保您在 {brand_name} Web Monitor 帳戶中至少設定了一個電站。",
+      "invalid_plant": "所選電站/電廠已不可用。請選擇其他電站。",
+      "timeout": "連線 {brand_name} Web Monitor 逾時。請檢查您的網路連線並重試。",
+      "modbus_not_installed": "pymodbus 程式庫未安裝。請使用以下指令安裝：pip install pymodbus",
+      "modbus_timeout": "Modbus 連線逾時。請驗證 IP 位址並確保 Modbus 閘道已開機並連線。",
+      "modbus_connection_failed": "無法連線到 Modbus 閘道。請檢查：(1) IP 位址是否正確，(2) 連接埠 502 是否未被阻擋，(3) 閘道上是否已啟用 Modbus TCP。",
+      "dongle_timeout": "WiFi Dongle 連線逾時。請驗證 IP 位址並確保 Dongle 已連線到您的網路。",
+      "dongle_connection_failed": "無法連線到 WiFi Dongle。請檢查：(1) IP 位址是否正確，(2) 連接埠 8000 是否未被阻擋，(3) Dongle 韌體是否支援本機存取（最近的更新可能會阻擋此功能）。",
+      "duplicate_serial": "具有此序號的裝置已新增到此安裝系統。",
+      "duplicate_transport": "此位址和連接埠的裝置已新增。每個本機連線必須使用唯一的 主機:連接埠 組合。",
+      "serial_mismatch": "此位址的裝置序號與預期不同。這可能表示裝置已更換或設定錯誤。",
+      "serial_timeout": "序列埠連線逾時。請驗證連接埠路徑並確保 USB 轉接器已連線。",
+      "serial_permission_denied": "存取序列埠被拒絕。在 Linux 上，請確保您的使用者屬於 'dialout' 群組。在 macOS 上，請授予 Home Assistant 存取 USB 裝置的權限。",
+      "serial_port_error": "無法開啟序列埠。請檢查：(1) 連接埠路徑是否正確，(2) USB 轉接器是否已連線，(3) 裝置是否未被其他應用程式使用。",
+      "serial_port_in_use": "序列埠已被其他應用程式使用。請關閉使用此連接埠的其他應用程式並重試。",
+      "invalid_ip_range": "無效的 IP 範圍。請使用 CIDR 表示法（例如 192.168.1.0/24）或範圍（例如 192.168.1.1-192.168.1.254）。僅允許私有 IP 範圍。",
+      "no_scan_type_selected": "請至少選擇一種掃描類型（Modbus 或 Dongle）。"
+    },
+    "abort": {
+      "already_configured": "此 {brand_name} Web Monitor 電站已設定。每個電站需要單獨的整合實例。",
+      "reauth_successful": "重新驗證成功！您的 {brand_name} Web Monitor 整合現已重新連線。",
+      "reconfigure_successful": "重新設定成功！您的 {brand_name} Web Monitor 設定已更新。",
+      "entry_not_found": "未找到設定項目。整合可能已被移除。請從整合頁面重新新增。",
+      "serial_already_configured": "逆變器 {serial} 已在 \"{entry_title}\" 中設定。請先移除該項目，或使用重新設定流程變更連線類型。"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "{brand_name} Web Monitor 選項",
+        "description": "設定您的 {brand_name} Web Monitor 整合的輪詢間隔。感測器更新控制取得裝置資料的頻率。參數重新整理控制設定同步的頻率。",
+        "data": {
+          "sensor_update_interval": "感測器更新間隔（秒）",
+          "modbus_update_interval": "Modbus更新間隔（秒）",
+          "dongle_update_interval": "WiFi加密狗更新間隔（秒）",
+          "http_polling_interval": "HTTP/雲端輪詢間隔（秒）",
+          "parameter_refresh_interval": "參數重新整理間隔（分鐘）",
+          "library_debug": "程式庫偵錯日誌",
+          "data_validation": "暫存器資料驗證",
+          "include_ac_couple_pv": "將交流耦合光伏納入總量"
+        },
+        "data_description": {
+          "sensor_update_interval": "輪詢感測器更新的頻率（{min_sensor_interval}-{max_sensor_interval} 秒）。較低的值提供更快的更新，但會增加 API 負載。",
+          "modbus_update_interval": "Modbus TCP/串列設備的輪詢頻率（{min_modbus_interval}-{max_modbus_interval}秒）。較小的值提供更快的更新，但會增加化線流量。",
+          "dongle_update_interval": "WiFi加密狗設備的輪詢頻率（{min_dongle_interval}-{max_dongle_interval}秒）。WiFi連線可能需要比Modbus更長的間隔以保持穩定。",
+          "http_polling_interval": "從雲端API擷取資料的頻率（{min_http_interval}-{max_http_interval}秒）。較高的值可減少API負載。在混合模式下，此設定僅控制雲端資料；本地傳輸資料按感測器間隔更新。",
+          "parameter_refresh_interval": "重新整理逆變器參數（如 SOC 限制和充電設定）的頻率（{min_param_interval}-{max_param_interval} 分鐘）。",
+          "library_debug": "啟用 pylxpweb 程式庫的 DEBUG 日誌（顯示 API 請求、回應和內部程式庫作業）",
+          "data_validation": "啟用本地暫存器讀取的損壞偵測。驗證物理邊界（SoC、頻率、智慧埠狀態）和能量單調性。僅在出現不穩定的暫存器讀取時啟用（幽靈實體、能量尖峰、無效值）。",
+          "include_ac_couple_pv": "將GridBOSS智慧端口的交流耦合太陽能逆變器功率新增到並聯組光伏總量中"
+        }
+      }
+    }
+  },
+  "selector": {
+    "operating_mode": {
+      "options": {
+        "normal": "正常",
+        "standby": "待機"
+      }
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "dongle_connectivity": {
+        "name": "Dongle 連線狀態",
+        "state": {
+          "on": "已連線",
+          "off": "已斷線"
+        }
+      }
+    },
+    "sensor": {
+      "ac_power": {
+        "name": "交流功率"
+      },
+      "ac_voltage": {
+        "name": "交流電壓"
+      },
+      "ac_current": {
+        "name": "交流電流"
+      },
+      "frequency": {
+        "name": "頻率"
+      },
+      "dc_power": {
+        "name": "直流功率"
+      },
+      "dc_voltage": {
+        "name": "直流電壓"
+      },
+      "dc_current": {
+        "name": "直流電流"
+      },
+      "battery_power": {
+        "name": "電池功率"
+      },
+      "battery_voltage": {
+        "name": "電池電壓"
+      },
+      "battery_current": {
+        "name": "電池電流"
+      },
+      "state_of_charge": {
+        "name": "電量狀態"
+      },
+      "state_of_health": {
+        "name": "健康狀態"
+      },
+      "total_energy": {
+        "name": "總電量"
+      },
+      "daily_energy": {
+        "name": "日電量"
+      },
+      "monthly_energy": {
+        "name": "月電量"
+      },
+      "yearly_energy": {
+        "name": "年電量"
+      },
+      "internal_temperature": {
+        "name": "內部溫度"
+      },
+      "radiator1_temperature": {
+        "name": "散熱器 1 溫度"
+      },
+      "radiator2_temperature": {
+        "name": "散熱器 2 溫度"
+      },
+      "bt_temperature": {
+        "name": "BT溫度"
+      },
+      "status_code": {
+        "name": "狀態代碼"
+      },
+      "status_text": {
+        "name": "狀態"
+      },
+      "grid_power": {
+        "name": "電網功率"
+      },
+      "load_power": {
+        "name": "負載功率"
+      },
+      "pv_total_power": {
+        "name": "PV 總功率"
+      },
+      "pv1_power": {
+        "name": "PV1 功率"
+      },
+      "pv2_power": {
+        "name": "PV2 功率"
+      },
+      "pv3_power": {
+        "name": "PV3 功率"
+      },
+      "cell_voltage_max": {
+        "name": "最大電芯電壓"
+      },
+      "cell_voltage_min": {
+        "name": "最小電芯電壓"
+      },
+      "cell_voltage_delta": {
+        "name": "電芯電壓差"
+      },
+      "cycle_count": {
+        "name": "循環次數"
+      },
+      "firmware_version": {
+        "name": "韌體版本"
+      },
+      "grid_voltage_r": {
+        "name": "電網電壓 R"
+      },
+      "grid_voltage_s": {
+        "name": "電網電壓 S"
+      },
+      "grid_voltage_t": {
+        "name": "電網電壓 T"
+      },
+      "grid_voltage": {
+        "name": "電網電壓"
+      },
+      "grid_frequency": {
+        "name": "電網頻率"
+      },
+      "eps_voltage_r": {
+        "name": "EPS 電壓 R"
+      },
+      "eps_voltage_s": {
+        "name": "EPS 電壓 S"
+      },
+      "eps_voltage_t": {
+        "name": "EPS 電壓 T"
+      },
+      "eps_voltage": {
+        "name": "EPS電壓"
+      },
+      "eps_frequency": {
+        "name": "EPS 頻率"
+      },
+      "eps_power": {
+        "name": "EPS 功率"
+      },
+      "eps_power_l1": {
+        "name": "EPS 功率 L1"
+      },
+      "eps_power_l2": {
+        "name": "EPS 功率 L2"
+      },
+      "eps_apparent_power_l1": {
+        "name": "EPS視在功率 L1"
+      },
+      "eps_apparent_power_l2": {
+        "name": "EPS視在功率 L2"
+      },
+      "eps_energy_today_l1": {
+        "name": "EPS今日電量 L1"
+      },
+      "eps_energy_today_l2": {
+        "name": "EPS今日電量 L2"
+      },
+      "eps_energy_total_l1": {
+        "name": "EPS累計電量 L1"
+      },
+      "eps_energy_total_l2": {
+        "name": "EPS累計電量 L2"
+      },
+      "inverter_power_l1": {
+        "name": "逆變器功率 L1"
+      },
+      "inverter_power_l2": {
+        "name": "逆變器功率 L2"
+      },
+      "rectifier_power_l1": {
+        "name": "整流器功率 L1"
+      },
+      "rectifier_power_l2": {
+        "name": "整流器功率 L2"
+      },
+      "grid_export_power_l1": {
+        "name": "電網輸出功率 L1"
+      },
+      "grid_export_power_l2": {
+        "name": "電網輸出功率 L2"
+      },
+      "grid_import_power_l1": {
+        "name": "電網輸入功率 L1"
+      },
+      "grid_import_power_l2": {
+        "name": "電網輸入功率 L2"
+      },
+      "generator_voltage_l1": {
+        "name": "發電機電壓 L1"
+      },
+      "generator_voltage_l2": {
+        "name": "發電機電壓 L2"
+      },
+      "power_output": {
+        "name": "輸出功率"
+      },
+      "rectifier_power": {
+        "name": "整流器功率"
+      },
+      "ac_couple_power": {
+        "name": "AC 耦合功率"
+      },
+      "bus1_voltage": {
+        "name": "母線 1 電壓"
+      },
+      "bus2_voltage": {
+        "name": "母線 2 電壓"
+      },
+      "total_load_power": {
+        "name": "總負載功率"
+      },
+      "smart_port1_status": {
+        "name": "智慧端口1狀態",
+        "state": {
+          "unused": "未使用",
+          "smart_load": "智慧負載",
+          "ac_couple": "交流耦合"
+        }
+      },
+      "smart_port2_status": {
+        "name": "智慧端口2狀態",
+        "state": {
+          "unused": "未使用",
+          "smart_load": "智慧負載",
+          "ac_couple": "交流耦合"
+        }
+      },
+      "smart_port3_status": {
+        "name": "智慧端口3狀態",
+        "state": {
+          "unused": "未使用",
+          "smart_load": "智慧負載",
+          "ac_couple": "交流耦合"
+        }
+      },
+      "smart_port4_status": {
+        "name": "智慧端口4狀態",
+        "state": {
+          "unused": "未使用",
+          "smart_load": "智慧負載",
+          "ac_couple": "交流耦合"
+        }
+      },
+      "battery_bank_charge_rate": {
+        "name": "電池組充電速率"
+      },
+      "battery_charge_rate": {
+        "name": "充電速率"
+      },
+      "parallel_battery_charge_rate": {
+        "name": "電池充電速率"
+      }
+    },
+    "switch": {
+      "quick_charge": {
+        "name": "快速充電"
+      },
+      "battery_backup_eps": {
+        "name": "電池備份 (EPS)"
+      },
+      "off_grid_mode": {
+        "name": "離網模式"
+      }
+    },
+    "number": {
+      "system_charge_soc_limit": {
+        "name": "系統充電 SOC 限制"
+      },
+      "ac_charge_power": {
+        "name": "交流充電功率"
+      },
+      "pv_charge_power": {
+        "name": "PV 充電功率"
+      },
+      "pv_start_voltage": {
+        "name": "PV啟動電壓"
+      },
+      "ac_charge_soc_limit": {
+        "name": "交流充電 SOC 限制"
+      },
+      "soc_cutoff": {
+        "name": "SOC 截止"
+      }
+    },
+    "button": {
+      "refresh_data": {
+        "name": "重新整理資料"
+      }
+    },
+    "select": {
+      "operating_mode": {
+        "name": "運作模式",
+        "state": {
+          "normal": "正常",
+          "standby": "待機"
+        }
+      },
+      "pv_input_mode": {
+        "name": "PV輸入模式",
+        "state": {
+          "no_pv": "NO PV",
+          "pv1": "PV1",
+          "pv2": "PV2",
+          "pv3": "PV3",
+          "pv1_pv2": "PV1 & PV2",
+          "pv1_pv3": "PV1 & PV3",
+          "pv2_pv3": "PV2 & PV3",
+          "pv1_pv2_pv3": "PV1 & PV2 & PV3"
+        }
+      }
+    }
+  },
+  "services": {
+    "refresh_data": {
+      "name": "重新整理資料",
+      "description": "強制立即從 {brand_name} API 重新整理裝置資料，略過正常輪詢間隔。",
+      "fields": {
+        "entry_id": {
+          "name": "設定項目 ID",
+          "description": "要重新整理的設定項目 ID。如果未提供，將重新整理所有 {brand_name} Web Monitor 整合。"
+        }
+      }
+    },
+    "reconcile_history": {
+      "name": "核對能源歷史",
+      "description": "從{brand_name}雲端API補充缺失的能源統計資料。此服務擷取歷史能源資料並將其匯入Home Assistant的統計資料庫，以填補能源感測器歷史中的空白。需要雲端憑據（HTTP或混合連線模式）。",
+      "fields": {
+        "lookback_hours": {
+          "name": "回溯小時數",
+          "description": "搜尋能源統計空白的小時數。預設為48小時。"
+        },
+        "start_date": {
+          "name": "開始日期",
+          "description": "核對的明確開始日期（YYYY-MM-DD格式）。如果提供，還需要end_date。"
+        },
+        "end_date": {
+          "name": "結束日期",
+          "description": "核對的明確結束日期（YYYY-MM-DD格式）。如果提供，還需要start_date。"
+        },
+        "entry_id": {
+          "name": "設定項目ID",
+          "description": "要核對的設定項目ID。如果未提供，將核對所有具有雲端憑據的{brand_name} Web Monitor整合。"
+        }
+      }
+    }
+  },
+  "exceptions": {
+    "entry_not_found": {
+      "message": "未找到設定項目 {entry_id}。請驗證項目 ID 是否正確。"
+    },
+    "entry_not_loaded": {
+      "message": "設定項目 {entry_id} 未載入。請確保整合已正確設定並正在執行。"
+    },
+    "no_coordinators": {
+      "message": "未找到可重新整理的 {brand_name} 協調器。請確保至少設定並載入了一個 {brand_name} Web Monitor 整合。"
+    },
+    "invalid_date_format": {
+      "message": "日期格式無效。請使用YYYY-MM-DD格式。"
+    }
+  },
+  "issues": {
+    "dongle_validation_disabled": {
+      "title": "建議為 WiFi dongle 啟用資料驗證",
+      "description": "已設定 WiFi dongle，但**資料驗證**已停用。WiFi dongle 共用 Modbus 匯流排，同時讀取可能導致暫存器資料損壞（例如能量尖峰）。\n\n若要修正，請前往**設定 > 裝置與服務 > EG4 Web Monitor > 設定**，然後啟用**資料驗證**。"
+    }
+  }
+}

@@ -1,0 +1,770 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "EG4 Web Monitor Installatie",
+        "description": "Verbind uw EG4-cloudaccount voor volledige toegang tot alle functies, waaronder GridBOSS, Snel Laden en firmware-updates. U kunt later lokale apparaten toevoegen voor snellere polling.",
+        "menu_options": {
+          "cloud_credentials": "Cloudaccount verbinden",
+          "local_device_type": "Overslaan — Alleen lokaal"
+        }
+      },
+      "cloud_credentials": {
+        "title": "{brand_name} Cloud API-inloggegevens",
+        "description": "Verbind met uw {brand_name} Web Monitor-account om uw zonne-omvormers, GridBOSS-apparaten en batterijsystemen te beheren.",
+        "data": {
+          "username": "Gebruikersnaam",
+          "password": "Wachtwoord",
+          "base_url": "Basis-URL",
+          "verify_ssl": "SSL-certificaat verifiëren",
+          "dst_sync": "Zomertijd-synchronisatie"
+        },
+        "data_description": {
+          "username": "Uw {brand_name} Web Monitor-accountgebruikersnaam",
+          "password": "Uw {brand_name} Web Monitor-accountwachtwoord",
+          "base_url": "De basis-URL voor de {brand_name} Web Monitor API",
+          "verify_ssl": "SSL-certificaatverificatie inschakelen voor beveiligde verbindingen",
+          "dst_sync": "Zomertijdinstellingen automatisch synchroniseren met uw omvormer op basis van uw Home Assistant-tijdzone"
+        }
+      },
+      "cloud_station": {
+        "title": "Selecteer station",
+        "description": "Kies welk zonnestation/installatie u wilt monitoren.",
+        "data": {
+          "plant_id": "Station/Installatie"
+        },
+        "data_description": {
+          "plant_id": "Selecteer de zonne-installatie die u wilt monitoren"
+        }
+      },
+      "cloud_add_local": {
+        "title": "Lokale apparaten toevoegen?",
+        "description": "Uw cloudverbinding is gereed. U kunt optioneel lokale apparaten toevoegen voor snellere polling (5-seconden updates via Modbus/Dongle versus 30-seconden cloudpolling).",
+        "menu_options": {
+          "local_device_type": "Lokaal apparaat toevoegen",
+          "cloud_finish": "Voltooien (alleen cloud)"
+        }
+      },
+      "local_device_type": {
+        "title": "Selecteer apparaatverbinding",
+        "description": "Kies hoe uw apparaat lokaal is verbonden.",
+        "menu_options": {
+          "network_scan_config": "Netwerk scannen (Auto-ontdekking)",
+          "local_modbus": "Modbus TCP (Handmatige invoer)",
+          "local_serial": "USB Serieel (RS485-adapter)",
+          "local_dongle": "WiFi Dongle (Handmatige invoer)"
+        }
+      },
+      "network_scan_config": {
+        "title": "Netwerkscan-instellingen",
+        "description": "Scan uw lokale netwerk naar {brand_name}-apparaten. Modbus-apparaten (poort 502) worden volledig geïdentificeerd. WiFi-dongle-kandidaten (poort 8000) vereisen handmatige invoer van serienummers.",
+        "data": {
+          "ip_range": "IP-bereik (CIDR)",
+          "scan_modbus": "Scannen naar Modbus TCP (poort 502)",
+          "scan_dongle": "Scannen naar WiFi-dongles (poort 8000)",
+          "timeout": "Verbindingstimeout (seconden)"
+        },
+        "data_description": {
+          "ip_range": "Netwerkbereik in CIDR-notatie (bijv. 192.168.1.0/24). Automatisch gedetecteerd vanuit uw Home Assistant-netwerk.",
+          "timeout": "Wachttijd per apparaat. Lager = snellere scan, hoger = betrouwbaarder."
+        }
+      },
+      "network_scan_progress": {
+        "title": "Netwerk wordt gescand...",
+        "description": "Uw lokale netwerk wordt gescand naar {brand_name}-apparaten. Dit kan even duren."
+      },
+      "network_scan_results": {
+        "title": "{device_count} apparaat/apparaten gevonden",
+        "description": "Selecteer een apparaat uit de scanresultaten (gescand bereik: {scanned_range}). Modbus-apparaten zijn volledig geïdentificeerd. Dongle-kandidaten vereisen invoer van serienummers op het volgende scherm.",
+        "data": {
+          "device": "Selecteer apparaat"
+        }
+      },
+      "network_scan_empty": {
+        "title": "Geen apparaten gevonden",
+        "description": "De netwerkscan van {scanned_range} heeft geen {brand_name}-apparaten gevonden. U kunt de verbindingsgegevens handmatig invoeren.",
+        "menu_options": {
+          "local_modbus": "Modbus handmatig invoeren",
+          "local_dongle": "Dongle handmatig invoeren"
+        }
+      },
+      "local_modbus": {
+        "title": "Verbinden via Modbus TCP",
+        "description": "Voer het IP-adres van uw Modbus TCP-gateway in. Serienummer, model en firmware worden automatisch gedetecteerd.",
+        "data": {
+          "modbus_host": "Gateway IP-adres",
+          "modbus_port": "Poort",
+          "modbus_unit_id": "Unit-ID"
+        },
+        "data_description": {
+          "modbus_host": "IP-adres van uw RS485-naar-Ethernet adapter (bijv. 192.168.1.100)",
+          "modbus_port": "TCP-poort (standaard: 502)",
+          "modbus_unit_id": "Modbus slave-ID (standaard: 1)"
+        }
+      },
+      "local_dongle": {
+        "title": "Verbinden via WiFi Dongle",
+        "description": "Voer de dongle-verbindingsgegevens in. Het dongle-serienummer staat op het apparaatlabel (ook de WiFi AP-naam). Let op: Recente firmware-updates kunnen deze toegang blokkeren.",
+        "data": {
+          "dongle_host": "Dongle IP-adres",
+          "dongle_serial": "Dongle-serienummer",
+          "inverter_serial": "Omvormer-serienummer",
+          "dongle_port": "Poort"
+        },
+        "data_description": {
+          "dongle_host": "IP-adres van uw WiFi-dongle op uw lokale netwerk",
+          "dongle_serial": "10-teken dongle-serienummer (BJ/BA voor omvormers, DJ voor GridBOSS)",
+          "inverter_serial": "10-teken serienummer van het apparaat-typeplaatje (vereist voor authenticatie)",
+          "dongle_port": "TCP-poort (standaard: 8000)"
+        }
+      },
+      "local_serial": {
+        "title": "Verbinden via USB Serieel",
+        "description": "Selecteer uw USB-naar-RS485 seriële adapter. Serienummer, model en firmware worden automatisch gedetecteerd.",
+        "data": {
+          "serial_port": "Seriële poort",
+          "serial_baudrate": "Baudrate",
+          "serial_parity": "Pariteit",
+          "serial_stopbits": "Stopbits",
+          "modbus_unit_id": "Unit-ID"
+        },
+        "data_description": {
+          "serial_port": "Selecteer uw USB seriële adapter of voer handmatig in",
+          "serial_baudrate": "Communicatiesnelheid (standaard: 19200)",
+          "serial_parity": "Pariteitsbitinstelling (standaard: Geen)",
+          "serial_stopbits": "Aantal stopbits (standaard: 1)",
+          "modbus_unit_id": "Modbus slave-ID (standaard: 1)"
+        }
+      },
+      "local_serial_manual": {
+        "title": "Serieel poortpad invoeren",
+        "description": "Voer het pad naar uw USB-naar-RS485 seriële adapter handmatig in.",
+        "data": {
+          "serial_port": "Serieel poortpad"
+        },
+        "data_description": {
+          "serial_port": "bijv. /dev/ttyUSB0 (Linux), COM1 (Windows), /dev/tty.usbserial-* (macOS)"
+        }
+      },
+      "local_device_confirmed": {
+        "title": "Apparaat bevestigen",
+        "description": "**{device_type}**: {device_model}\n**Serienummer**: {device_serial}\n**Familie**: {device_family}\n**Firmware**: {device_firmware}\n**PV-vermogen**: {device_pv_power}W | **Batterij SOC**: {device_battery_soc}%\n\nSelecteer uw type elektriciteitsnet:",
+        "data": {
+          "grid_type": "Nettype"
+        },
+        "data_description": {
+          "grid_type": "Split Phase voor US 120V/240V (L1/L2), Enkelfasig voor Brazilie 220V of EU 230V, Driefasig voor R/S/T-systemen"
+        }
+      },
+      "local_device_added": {
+        "title": "Apparaat toegevoegd",
+        "description": "Apparaat #{device_count} succesvol toegevoegd. Wat nu?",
+        "menu_options": {
+          "local_device_type": "Nog een apparaat toevoegen",
+          "local_add_cloud": "Cloud-inloggegevens toevoegen",
+          "local_finish": "Installatie voltooien"
+        }
+      },
+      "local_finish": {
+        "title": "Geef uw installatie een naam",
+        "description": "Geef uw zonne-installatie een vriendelijke naam.\n\n**Geconfigureerde apparaten**: {device_summary}",
+        "data": {
+          "station_name": "Installatienaam (optioneel)"
+        },
+        "data_description": {
+          "station_name": "Laat leeg om het apparaatmodel en serienummer als naam te gebruiken"
+        }
+      },
+      "reauth_confirm": {
+        "title": "{brand_name} opnieuw authenticeren",
+        "description": "Uw sessie is verlopen. Voer uw wachtwoord opnieuw in om de toegang te herstellen.",
+        "data": {
+          "password": "Wachtwoord"
+        },
+        "data_description": {
+          "password": "Uw {brand_name} Web Monitor-accountwachtwoord"
+        }
+      },
+      "reconfigure_menu": {
+        "title": "Herconfigureren",
+        "description": "Wat wilt u wijzigen?",
+        "menu_options": {
+          "reconfigure_cloud_update": "Cloudinloggegevens bijwerken",
+          "reconfigure_cloud_remove": "Cloudverbinding verwijderen",
+          "reconfigure_cloud_add": "Cloudinloggegevens toevoegen",
+          "reconfigure_devices": "Lokale apparaten beheren"
+        }
+      },
+      "reconfigure_cloud_update": {
+        "title": "Cloudinloggegevens bijwerken",
+        "description": "Werk uw {brand_name} Web Monitor-accountgegevens bij.",
+        "data": {
+          "username": "Gebruikersnaam",
+          "password": "Wachtwoord",
+          "base_url": "Basis-URL",
+          "verify_ssl": "SSL-certificaat verifiëren",
+          "dst_sync": "Zomertijd-synchronisatie"
+        },
+        "data_description": {
+          "username": "Uw {brand_name} Web Monitor-accountgebruikersnaam",
+          "password": "Uw {brand_name} Web Monitor-accountwachtwoord",
+          "base_url": "De basis-URL voor de {brand_name} Web Monitor API",
+          "verify_ssl": "SSL-certificaatverificatie inschakelen voor beveiligde verbindingen",
+          "dst_sync": "Zomertijdinstellingen automatisch synchroniseren"
+        }
+      },
+      "reconfigure_cloud_add": {
+        "title": "Cloudinloggegevens toevoegen",
+        "description": "Voeg cloud API-inloggegevens toe om batterijdetails, afstandsbediening en apparaatontdekking in te schakelen.",
+        "data": {
+          "username": "Gebruikersnaam",
+          "password": "Wachtwoord",
+          "base_url": "Basis-URL",
+          "verify_ssl": "SSL-certificaat verifiëren",
+          "dst_sync": "Zomertijd-synchronisatie"
+        },
+        "data_description": {
+          "username": "Uw {brand_name} Web Monitor-accountgebruikersnaam",
+          "password": "Uw {brand_name} Web Monitor-accountwachtwoord",
+          "base_url": "De basis-URL voor de {brand_name} Web Monitor API",
+          "verify_ssl": "SSL-certificaatverificatie inschakelen voor beveiligde verbindingen",
+          "dst_sync": "Zomertijdinstellingen automatisch synchroniseren"
+        }
+      },
+      "reconfigure_cloud_station": {
+        "title": "Station wijzigen",
+        "description": "Selecteer een ander zonnestation/installatie om te monitoren.",
+        "data": {
+          "plant_id": "Station/Installatie"
+        },
+        "data_description": {
+          "plant_id": "Selecteer de zonne-installatie die u wilt monitoren"
+        }
+      },
+      "reconfigure_cloud_remove": {
+        "title": "Cloudverbinding verwijderen",
+        "description": "Dit verwijdert de cloudinloggegevens uit uw configuratie. Uw lokale apparaten blijven werken.\n\nFuncties die cloud vereisen en worden uitgeschakeld:\n- Snel Laden-schakelaar\n- Firmware-updatemeldingen\n\nAlle andere bedieningselementen (Batterij-backup, AC-laden, SOC-limieten, enz.) werken lokaal via Modbus-registers.",
+        "submit": "Cloudverbinding verwijderen"
+      },
+      "reconfigure_devices": {
+        "title": "Lokale apparaten beheren",
+        "description": "{device_list}",
+        "menu_options": {
+          "reconfigure_device_add": "Apparaat toevoegen",
+          "reconfigure_device_remove": "Apparaat verwijderen",
+          "reconfigure_devices_save": "Opslaan en sluiten"
+        }
+      },
+      "reconfigure_device_remove": {
+        "title": "Lokaal apparaat verwijderen",
+        "description": "Selecteer het apparaat dat u uit deze configuratie wilt verwijderen.",
+        "data": {
+          "device": "Apparaat"
+        }
+      },
+      "reconfigure_device_add": {
+        "title": "Lokaal apparaat toevoegen",
+        "description": "Selecteer het verbindingstype voor uw nieuwe apparaat.",
+        "menu_options": {
+          "network_scan_config": "Netwerk scannen (Auto-ontdekking)",
+          "reconfigure_add_modbus": "Modbus TCP (Handmatige invoer)",
+          "reconfigure_add_serial": "USB Serieel (RS485-adapter)",
+          "reconfigure_add_dongle": "WiFi Dongle (Handmatige invoer)"
+        }
+      },
+      "reconfigure_add_modbus": {
+        "title": "Modbus-apparaat toevoegen",
+        "description": "Configureer een nieuwe Modbus TCP-verbinding. Apparaatinfo wordt automatisch gedetecteerd.",
+        "data": {
+          "modbus_host": "Gateway IP-adres",
+          "modbus_port": "Poort",
+          "modbus_unit_id": "Unit-ID"
+        },
+        "data_description": {
+          "modbus_host": "IP-adres van uw RS485-naar-Ethernet adapter (bijv. 192.168.1.100)",
+          "modbus_port": "TCP-poort (standaard: 502)",
+          "modbus_unit_id": "Modbus slave-ID (standaard: 1)"
+        }
+      },
+      "reconfigure_add_dongle": {
+        "title": "WiFi Dongle-apparaat toevoegen",
+        "description": "Configureer een nieuwe WiFi-dongle-verbinding. Apparaatinfo wordt automatisch gedetecteerd.",
+        "data": {
+          "dongle_host": "Dongle IP-adres",
+          "dongle_serial": "Dongle-serienummer",
+          "inverter_serial": "Omvormer-serienummer",
+          "dongle_port": "Poort"
+        },
+        "data_description": {
+          "dongle_host": "IP-adres van uw WiFi-dongle op uw lokale netwerk",
+          "dongle_serial": "10-teken dongle-serienummer (BJ/BA voor omvormers, DJ voor GridBOSS)",
+          "inverter_serial": "10-teken serienummer van het apparaat-typeplaatje (vereist voor authenticatie)",
+          "dongle_port": "TCP-poort (standaard: 8000)"
+        }
+      },
+      "reconfigure_add_serial": {
+        "title": "USB Serieel apparaat toevoegen",
+        "description": "Configureer een nieuwe USB-naar-RS485 seriële verbinding. Apparaatinfo wordt automatisch gedetecteerd.",
+        "data": {
+          "serial_port": "Seriële poort",
+          "serial_baudrate": "Baudrate",
+          "serial_parity": "Pariteit",
+          "serial_stopbits": "Stopbits",
+          "modbus_unit_id": "Unit-ID"
+        },
+        "data_description": {
+          "serial_port": "Selecteer uw USB seriële adapter of voer handmatig in",
+          "serial_baudrate": "Communicatiesnelheid (standaard: 19200)",
+          "serial_parity": "Pariteitsbitinstelling (standaard: Geen)",
+          "serial_stopbits": "Aantal stopbits (standaard: 1)",
+          "modbus_unit_id": "Modbus slave-ID (standaard: 1)"
+        }
+      },
+      "reconfigure_add_serial_manual": {
+        "title": "Serieel poortpad invoeren",
+        "description": "Voer het pad naar uw USB-naar-RS485 seriële adapter handmatig in.",
+        "data": {
+          "serial_port": "Serieel poortpad"
+        },
+        "data_description": {
+          "serial_port": "bijv. /dev/ttyUSB0 (Linux), COM1 (Windows), /dev/tty.usbserial-* (macOS)"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Kan geen verbinding maken met {brand_name} Web Monitor. Controleer uw netwerkverbinding en probeer het opnieuw.",
+      "invalid_auth": "Ongeldige gebruikersnaam of wachtwoord. Controleer uw inloggegevens en probeer het opnieuw.",
+      "unknown": "Er is een onverwachte fout opgetreden. Probeer het opnieuw of controleer de logboeken voor meer details.",
+      "no_plants": "Geen zonnestations/installaties gevonden in uw account. Zorg ervoor dat u ten minste één station heeft geconfigureerd in uw {brand_name} Web Monitor-account.",
+      "invalid_plant": "Het geselecteerde station/installatie is niet meer beschikbaar. Selecteer een ander station.",
+      "timeout": "Verbinding met {brand_name} Web Monitor is verlopen. Controleer uw internetverbinding en probeer het opnieuw.",
+      "modbus_not_installed": "De pymodbus-bibliotheek is niet geïnstalleerd. Installeer deze met: pip install pymodbus",
+      "modbus_timeout": "Modbus-verbinding is verlopen. Controleer het IP-adres en zorg ervoor dat de Modbus-gateway is ingeschakeld en verbonden.",
+      "modbus_connection_failed": "Kan geen verbinding maken met Modbus-gateway. Controleer: (1) IP-adres is correct, (2) poort 502 is niet geblokkeerd, (3) Modbus TCP is ingeschakeld op de gateway.",
+      "dongle_timeout": "WiFi-dongle-verbinding is verlopen. Controleer het IP-adres en zorg ervoor dat de dongle is verbonden met uw netwerk.",
+      "dongle_connection_failed": "Kan geen verbinding maken met WiFi-dongle. Controleer: (1) IP-adres is correct, (2) poort 8000 is niet geblokkeerd, (3) dongle-firmware ondersteunt lokale toegang (recente updates kunnen dit blokkeren).",
+      "duplicate_serial": "Een apparaat met dit serienummer is al toegevoegd aan deze installatie.",
+      "duplicate_transport": "Een apparaat op dit adres en deze poort is al toegevoegd. Elke lokale verbinding moet een unieke host:poort-combinatie gebruiken.",
+      "serial_mismatch": "Het apparaat op dit adres heeft een ander serienummer dan verwacht. Dit kan duiden op een apparaatwisseling of verkeerde configuratie.",
+      "serial_timeout": "Seriële poortverbinding is verlopen. Controleer het poortpad en zorg ervoor dat de USB-adapter is aangesloten.",
+      "serial_permission_denied": "Toegang tot de seriële poort geweigerd. Zorg er op Linux voor dat uw gebruiker in de 'dialout'-groep zit. Geef op macOS Home Assistant toegang tot het USB-apparaat.",
+      "serial_port_error": "Kan seriële poort niet openen. Controleer: (1) poortpad is correct, (2) USB-adapter is aangesloten, (3) apparaat wordt niet gebruikt door een andere applicatie.",
+      "serial_port_in_use": "Seriële poort wordt al gebruikt door een andere applicatie. Sluit andere applicaties die deze poort gebruiken en probeer het opnieuw.",
+      "invalid_ip_range": "Ongeldig IP-bereik. Gebruik CIDR-notatie (bijv. 192.168.1.0/24) of een bereik (bijv. 192.168.1.1-192.168.1.254). Alleen privé IP-bereiken zijn toegestaan.",
+      "no_scan_type_selected": "Selecteer ten minste één scantype (Modbus of Dongle)."
+    },
+    "abort": {
+      "already_configured": "Dit {brand_name} Web Monitor-station is al geconfigureerd. Elk station vereist een aparte integratie-instantie.",
+      "reauth_successful": "Herauthenticatie geslaagd! Uw {brand_name} Web Monitor-integratie is nu opnieuw verbonden.",
+      "reconfigure_successful": "Herconfiguratie geslaagd! Uw {brand_name} Web Monitor-instellingen zijn bijgewerkt.",
+      "entry_not_found": "Configuratie-invoer niet gevonden. De integratie is mogelijk verwijderd. Voeg deze opnieuw toe via de Integraties-pagina.",
+      "serial_already_configured": "Omvormer {serial} is al geconfigureerd in \"{entry_title}\". Verwijder eerst die invoer, of gebruik de herconfiguratiestroom om verbindingstypen te wijzigen."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "{brand_name} Web Monitor-opties",
+        "description": "Configureer polling-intervallen voor uw {brand_name} Web Monitor-integratie. Sensorupdates bepalen hoe vaak apparaatgegevens worden opgehaald. Parameterverversing bepaalt hoe vaak configuratie-instellingen worden gesynchroniseerd.",
+        "data": {
+          "sensor_update_interval": "Sensorupdate-interval (seconden)",
+          "modbus_update_interval": "Modbus update-interval (seconden)",
+          "dongle_update_interval": "WiFi Dongle update-interval (seconden)",
+          "http_polling_interval": "HTTP/cloud-polling interval (seconden)",
+          "parameter_refresh_interval": "Parameterverversingsinterval (minuten)",
+          "library_debug": "Bibliotheek-debuglogboekregistratie",
+          "data_validation": "Registerdata Validatie",
+          "include_ac_couple_pv": "AC-gekoppelde PV opnemen in totalen"
+        },
+        "data_description": {
+          "sensor_update_interval": "Hoe vaak te pollen voor sensorupdates ({min_sensor_interval}-{max_sensor_interval} seconden). Lagere waarden bieden snellere updates maar verhogen de API-belasting.",
+          "modbus_update_interval": "Hoe vaak Modbus TCP/Serieel apparaten worden gepolld ({min_modbus_interval}-{max_modbus_interval} seconden). Lagere waarden geven snellere updates maar verhogen het busverkeer.",
+          "dongle_update_interval": "Hoe vaak WiFi Dongle apparaten worden gepolld ({min_dongle_interval}-{max_dongle_interval} seconden). WiFi-verbindingen hebben mogelijk langere intervallen nodig dan Modbus voor stabiliteit.",
+          "http_polling_interval": "Hoe vaak de cloud-API wordt bevraagd voor gegevens ({min_http_interval}-{max_http_interval} seconden). Hogere waarden verminderen de API-belasting. In hybride modus beheert dit alleen cloudgegevens; lokale transportgegevens worden bijgewerkt op het sensorinterval.",
+          "parameter_refresh_interval": "Hoe vaak omvormerparameters zoals SOC-limieten en laadinstellingen te verversen ({min_param_interval}-{max_param_interval} minuten).",
+          "library_debug": "DEBUG-logboekregistratie inschakelen voor de pylxpweb-bibliotheek (toont API-verzoeken, -antwoorden en interne bibliotheekoperaties)",
+          "data_validation": "Corruptiedetectie voor lokale registerlezingen inschakelen. Valideert fysieke grenzen (SoC, frequentie, smartpoortstatus) en energiemonotoniteit. Alleen inschakelen bij instabiele registerlezingen (spookentiteiten, energiepieken, ongeldige waarden).",
+          "include_ac_couple_pv": "AC-gekoppeld zonne-invertervermogen (van GridBOSS Smart Ports) toevoegen aan de PV-totalen van de parallelle groep"
+        }
+      }
+    }
+  },
+  "selector": {
+    "operating_mode": {
+      "options": {
+        "normal": "Normaal",
+        "standby": "Stand-by"
+      }
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "dongle_connectivity": {
+        "name": "Dongle-connectiviteit",
+        "state": {
+          "on": "Verbonden",
+          "off": "Niet verbonden"
+        }
+      }
+    },
+    "sensor": {
+      "ac_power": {
+        "name": "AC-vermogen"
+      },
+      "ac_voltage": {
+        "name": "AC-spanning"
+      },
+      "ac_current": {
+        "name": "AC-stroom"
+      },
+      "frequency": {
+        "name": "Frequentie"
+      },
+      "dc_power": {
+        "name": "DC-vermogen"
+      },
+      "dc_voltage": {
+        "name": "DC-spanning"
+      },
+      "dc_current": {
+        "name": "DC-stroom"
+      },
+      "battery_power": {
+        "name": "Batterijvermogen"
+      },
+      "battery_voltage": {
+        "name": "Batterijspanning"
+      },
+      "battery_current": {
+        "name": "Batterijstroom"
+      },
+      "state_of_charge": {
+        "name": "Laadtoestand"
+      },
+      "state_of_health": {
+        "name": "Gezondheidstoestand"
+      },
+      "total_energy": {
+        "name": "Totale energie"
+      },
+      "daily_energy": {
+        "name": "Dagelijkse energie"
+      },
+      "monthly_energy": {
+        "name": "Maandelijkse energie"
+      },
+      "yearly_energy": {
+        "name": "Jaarlijkse energie"
+      },
+      "internal_temperature": {
+        "name": "Interne temperatuur"
+      },
+      "radiator1_temperature": {
+        "name": "Radiator 1 temperatuur"
+      },
+      "radiator2_temperature": {
+        "name": "Radiator 2 temperatuur"
+      },
+      "bt_temperature": {
+        "name": "BT-temperatuur"
+      },
+      "status_code": {
+        "name": "Statuscode"
+      },
+      "status_text": {
+        "name": "Status"
+      },
+      "grid_power": {
+        "name": "Netvermogen"
+      },
+      "load_power": {
+        "name": "Belastingsvermogen"
+      },
+      "pv_total_power": {
+        "name": "PV totaal vermogen"
+      },
+      "pv1_power": {
+        "name": "PV1-vermogen"
+      },
+      "pv2_power": {
+        "name": "PV2-vermogen"
+      },
+      "pv3_power": {
+        "name": "PV3-vermogen"
+      },
+      "cell_voltage_max": {
+        "name": "Maximale celspanning"
+      },
+      "cell_voltage_min": {
+        "name": "Minimale celspanning"
+      },
+      "cell_voltage_delta": {
+        "name": "Celspanningsverschil"
+      },
+      "cycle_count": {
+        "name": "Aantal cycli"
+      },
+      "firmware_version": {
+        "name": "Firmwareversie"
+      },
+      "grid_voltage_r": {
+        "name": "Netspanning R"
+      },
+      "grid_voltage_s": {
+        "name": "Netspanning S"
+      },
+      "grid_voltage_t": {
+        "name": "Netspanning T"
+      },
+      "grid_voltage": {
+        "name": "Netspanning"
+      },
+      "grid_frequency": {
+        "name": "Netfrequentie"
+      },
+      "eps_voltage_r": {
+        "name": "EPS-spanning R"
+      },
+      "eps_voltage_s": {
+        "name": "EPS-spanning S"
+      },
+      "eps_voltage_t": {
+        "name": "EPS-spanning T"
+      },
+      "eps_voltage": {
+        "name": "EPS-spanning"
+      },
+      "eps_frequency": {
+        "name": "EPS-frequentie"
+      },
+      "eps_power": {
+        "name": "EPS-vermogen"
+      },
+      "eps_power_l1": {
+        "name": "EPS-vermogen L1"
+      },
+      "eps_power_l2": {
+        "name": "EPS-vermogen L2"
+      },
+      "eps_apparent_power_l1": {
+        "name": "EPS schijnbaar vermogen L1"
+      },
+      "eps_apparent_power_l2": {
+        "name": "EPS schijnbaar vermogen L2"
+      },
+      "eps_energy_today_l1": {
+        "name": "EPS energie vandaag L1"
+      },
+      "eps_energy_today_l2": {
+        "name": "EPS energie vandaag L2"
+      },
+      "eps_energy_total_l1": {
+        "name": "EPS energie totaal L1"
+      },
+      "eps_energy_total_l2": {
+        "name": "EPS energie totaal L2"
+      },
+      "inverter_power_l1": {
+        "name": "Omvormer vermogen L1"
+      },
+      "inverter_power_l2": {
+        "name": "Omvormer vermogen L2"
+      },
+      "rectifier_power_l1": {
+        "name": "Gelijkrichter vermogen L1"
+      },
+      "rectifier_power_l2": {
+        "name": "Gelijkrichter vermogen L2"
+      },
+      "grid_export_power_l1": {
+        "name": "Net export vermogen L1"
+      },
+      "grid_export_power_l2": {
+        "name": "Net export vermogen L2"
+      },
+      "grid_import_power_l1": {
+        "name": "Net import vermogen L1"
+      },
+      "grid_import_power_l2": {
+        "name": "Net import vermogen L2"
+      },
+      "generator_voltage_l1": {
+        "name": "Generator spanning L1"
+      },
+      "generator_voltage_l2": {
+        "name": "Generator spanning L2"
+      },
+      "power_output": {
+        "name": "Uitgangsvermogen"
+      },
+      "rectifier_power": {
+        "name": "Gelijkrichtervermogen"
+      },
+      "ac_couple_power": {
+        "name": "AC-koppelvermogen"
+      },
+      "bus1_voltage": {
+        "name": "Bus 1-spanning"
+      },
+      "bus2_voltage": {
+        "name": "Bus 2-spanning"
+      },
+      "total_load_power": {
+        "name": "Totaal belastingsvermogen"
+      },
+      "smart_port1_status": {
+        "name": "Smart Port 1 Status",
+        "state": {
+          "unused": "Ongebruikt",
+          "smart_load": "Smart Load",
+          "ac_couple": "AC Couple"
+        }
+      },
+      "smart_port2_status": {
+        "name": "Smart Port 2 Status",
+        "state": {
+          "unused": "Ongebruikt",
+          "smart_load": "Smart Load",
+          "ac_couple": "AC Couple"
+        }
+      },
+      "smart_port3_status": {
+        "name": "Smart Port 3 Status",
+        "state": {
+          "unused": "Ongebruikt",
+          "smart_load": "Smart Load",
+          "ac_couple": "AC Couple"
+        }
+      },
+      "smart_port4_status": {
+        "name": "Smart Port 4 Status",
+        "state": {
+          "unused": "Ongebruikt",
+          "smart_load": "Smart Load",
+          "ac_couple": "AC Couple"
+        }
+      },
+      "battery_bank_charge_rate": {
+        "name": "Batterijbank laadsnelheid"
+      },
+      "battery_charge_rate": {
+        "name": "Laadsnelheid"
+      },
+      "parallel_battery_charge_rate": {
+        "name": "Batterij laadsnelheid"
+      }
+    },
+    "switch": {
+      "quick_charge": {
+        "name": "Snel laden"
+      },
+      "battery_backup_eps": {
+        "name": "Batterij-backup (EPS)"
+      },
+      "off_grid_mode": {
+        "name": "Off-grid modus"
+      }
+    },
+    "number": {
+      "system_charge_soc_limit": {
+        "name": "Systeem laad-SOC-limiet"
+      },
+      "ac_charge_power": {
+        "name": "AC-laadvermogen"
+      },
+      "pv_charge_power": {
+        "name": "PV-laadvermogen"
+      },
+      "pv_start_voltage": {
+        "name": "PV startspanning"
+      },
+      "ac_charge_soc_limit": {
+        "name": "AC-laad-SOC-limiet"
+      },
+      "soc_cutoff": {
+        "name": "SOC-uitschakeling"
+      }
+    },
+    "button": {
+      "refresh_data": {
+        "name": "Gegevens vernieuwen"
+      }
+    },
+    "select": {
+      "operating_mode": {
+        "name": "Bedrijfsmodus",
+        "state": {
+          "normal": "Normaal",
+          "standby": "Stand-by"
+        }
+      },
+      "pv_input_mode": {
+        "name": "PV invoermodus",
+        "state": {
+          "no_pv": "NO PV",
+          "pv1": "PV1",
+          "pv2": "PV2",
+          "pv3": "PV3",
+          "pv1_pv2": "PV1 & PV2",
+          "pv1_pv3": "PV1 & PV3",
+          "pv2_pv3": "PV2 & PV3",
+          "pv1_pv2_pv3": "PV1 & PV2 & PV3"
+        }
+      }
+    }
+  },
+  "services": {
+    "refresh_data": {
+      "name": "Gegevens vernieuwen",
+      "description": "Forceer een onmiddellijke vernieuwing van apparaatgegevens van de {brand_name} API, waarbij het normale polling-interval wordt overgeslagen.",
+      "fields": {
+        "entry_id": {
+          "name": "Configuratie-invoer-ID",
+          "description": "De configuratie-invoer-ID om te vernieuwen. Indien niet opgegeven, worden alle {brand_name} Web Monitor-integraties vernieuwd."
+        }
+      }
+    },
+    "reconcile_history": {
+      "name": "Energiegeschiedenis afstemmen",
+      "description": "Ontbrekende energiestatistieken aanvullen vanuit de {brand_name} cloud-API. Deze service haalt historische energiegegevens op en importeert ze in de statistiekendatabase van Home Assistant voor eventuele hiaten in uw energiesensorgeschiedenis. Vereist cloud-inloggegevens (HTTP- of hybride verbindingsmodus).",
+      "fields": {
+        "lookback_hours": {
+          "name": "Terugkijkuren",
+          "description": "Aantal uren om terug te kijken naar hiaten in energiestatistieken. Standaard is 48 uur."
+        },
+        "start_date": {
+          "name": "Startdatum",
+          "description": "Expliciete startdatum voor afstemming (JJJJ-MM-DD formaat). Indien opgegeven is ook end_date vereist."
+        },
+        "end_date": {
+          "name": "Einddatum",
+          "description": "Expliciete einddatum voor afstemming (JJJJ-MM-DD formaat). Indien opgegeven is ook start_date vereist."
+        },
+        "entry_id": {
+          "name": "Configuratie-invoer-ID",
+          "description": "De configuratie-invoer-ID om af te stemmen. Indien niet opgegeven worden alle {brand_name} Web Monitor-integraties met cloud-inloggegevens afgestemd."
+        }
+      }
+    }
+  },
+  "exceptions": {
+    "entry_not_found": {
+      "message": "Configuratie-invoer {entry_id} niet gevonden. Controleer of de invoer-ID correct is."
+    },
+    "entry_not_loaded": {
+      "message": "Configuratie-invoer {entry_id} is niet geladen. Zorg ervoor dat de integratie correct is geconfigureerd en actief is."
+    },
+    "no_coordinators": {
+      "message": "Geen {brand_name}-coördinatoren gevonden om te vernieuwen. Zorg ervoor dat ten minste één {brand_name} Web Monitor-integratie is geconfigureerd en geladen."
+    },
+    "invalid_date_format": {
+      "message": "Ongeldig datumformaat. Gebruik het formaat JJJJ-MM-DD."
+    }
+  },
+  "issues": {
+    "dongle_validation_disabled": {
+      "title": "Datavalidatie aanbevolen voor WiFi dongle",
+      "description": "Een WiFi dongle is geconfigureerd maar **Datavalidatie** is uitgeschakeld. WiFi dongles delen een Modbus-bus, en gelijktijdig lezen kan corrupte registerdata veroorzaken (bijv. energiepieken).\n\nGa naar **Instellingen > Apparaten & diensten > EG4 Web Monitor > Configureren** en schakel **Datavalidatie** in."
+    }
+  }
+}

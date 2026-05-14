@@ -1,0 +1,256 @@
+configure_passage_mode:
+  name: Configure passage mode
+  description: Tries to configure passage mode for a lock (or set of locks)
+  target:
+    entity:
+      integration: ttlock
+      domain: lock
+  fields:
+    enabled:
+      name: Enabled
+      description: Should passage mode be active (if false, no other fields are required)
+      required: true
+      default: true
+      selector:
+        boolean:
+    auto_unlock:
+      name: Auto-unlock
+      description: Should the the lock auto unlock when passage mode starts
+      required: false
+      default: false
+      selector:
+        boolean:
+    all_day:
+      name: All day
+      description: If set, the enabled setting applies 24/7. If not set then start_time, end_time and week_days is required.
+      required: false
+      default: false
+      selector:
+        boolean:
+    start_time:
+      name: Start time
+      description: When passage mode should begin (only hour + minute, seconds are ignored)
+      required: false
+      default: "00:00"
+      selector:
+        time:
+    end_time:
+      name: End time
+      description: When passage mode should end (only hour + minute, seconds are ignored)
+      required: false
+      default: "00:00"
+      selector:
+        time:
+    days:
+      name: Week days
+      description: Which days should the passage mode schedule apply to?
+      required: false
+      default:
+        - mon
+        - tue
+        - wed
+        - thu
+        - fri
+        - sat
+        - sun
+      selector:
+        select:
+          options:
+            - label: Monday
+              value: mon
+            - label: Tuesday
+              value: tue
+            - label: Wednesday
+              value: wed
+            - label: Thursday
+              value: thu
+            - label: Friday
+              value: fri
+            - label: Saturday
+              value: sat
+            - label: Sunday
+              value: sun
+          multiple: true
+          mode: list
+
+create_passcode:
+  name: Create a new pass code
+  description: Tries to create a new passcode for a lock. If no start/end time is provided, the passcode will be valid forever.
+  target:
+    entity:
+      integration: ttlock
+      domain: lock
+  fields:
+    passcode_name:
+      name: Pass code name
+      description: The unique name of this pass code (Can be whatever you like)
+      required: true
+      default: My passcode name
+      selector:
+        text:
+    passcode:
+      name: Passcode
+      description: The passcode that will be typed by the user to unlock the lock. (4-9 digits)
+      required: true
+      default: ""
+      selector:
+        text:
+          type: number
+    start_time:
+      name: Start date / time
+      description: What date/time pass code will become valid
+      required: false
+      selector:
+        datetime:
+    end_time:
+      name: End date / time
+      description: What date/time pass code will become invalid
+      required: false
+      selector:
+        datetime:
+
+modify_passcode:
+  name: Modify an existing pass code
+  description: Modifies an existing passcode for a lock.
+  target:
+    entity:
+      integration: ttlock
+      domain: lock
+  fields:
+    passcode_id:
+      name: Pass code ID
+      description: The ID of the passcode to modify
+      required: true
+      selector:
+        number:
+          min: 1
+          mode: box
+    passcode_name:
+      name: Pass code name
+      description: The new name for this pass code (Can be whatever you like)
+      required: true
+      selector:
+        text:
+    passcode:
+      name: Passcode
+      description: The new passcode that will be typed by the user to unlock the lock. (4-9 digits)
+      required: true
+      selector:
+        text:
+          type: number
+    start_time:
+      name: Start date / time
+      description: What date/time pass code will become valid
+      required: false
+      selector:
+        datetime:
+    end_time:
+      name: End date / time
+      description: What date/time pass code will become invalid
+      required: false
+      selector:
+        datetime:
+
+delete_passcode:
+  name: Delete a pass code
+  description: Deletes a specific passcode from a lock.
+  target:
+    entity:
+      integration: ttlock
+      domain: lock
+  fields:
+    passcode_id:
+      name: Pass code ID
+      description: The ID of the passcode to delete
+      required: true
+      selector:
+        number:
+          min: 1
+
+cleanup_passcodes:
+  name: Remove expired passcodes
+  description: Lists all passcodes for the selected lock and deletes ALL expired passcodes (where the end of validity date is older is past).
+  target:
+    entity:
+      integration: ttlock
+      domain: lock
+
+list_passcodes:
+  name: List passcodes
+  description: Lists all passcodes for the selected lock, including their names, codes, and validity periods.
+  target:
+    entity:
+      integration: ttlock
+      domain: lock
+
+list_records:
+  name: List lock records
+  description: Lists operation records for the selected lock.
+  target:
+    entity:
+      integration: ttlock
+      domain: lock
+  fields:
+    start_date:
+      name: Start date
+      description: Start date for record search (optional)
+      required: false
+      selector:
+        datetime:
+    end_date:
+      name: End date
+      description: End date for record search (optional)
+      required: false
+      selector:
+        datetime:
+    page_size:
+      name: Page size
+      description: Number of records to return (default 100, max 200)
+      required: false
+      default: 100
+      selector:
+        number:
+          min: 1
+          max: 200
+    page_no:
+      name: Page number
+      description: Page number to return (default 1)
+      required: false
+      default: 1
+      selector:
+        number:
+          min: 1
+          max: 10
+
+configure_autolock:
+  name: Configure Autolock
+  description: Configure Autolock of the device.
+  target:
+    entity:
+      integration: ttlock
+      domain: lock
+  fields:
+    enabled:
+      name: Enabled
+      description: Should the Autolock feature for the lock be enabled?
+      required: true
+      default: false
+      selector:
+        boolean:
+    seconds:
+      name: Seconds
+      description: How many seconds before the lock should Autolock? (0-60 secs | default 10)
+      required: false
+      selector:
+        number:
+          min: 0
+          max: 60
+          unit_of_measurement: secs
+
+update_state:
+  name: Update State
+  description: Forces a refresh of the lock state from the API.
+  target:
+    entity:
+      integration: ttlock
+      domain: lock

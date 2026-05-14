@@ -1,0 +1,770 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Настройка EG4 Web Monitor",
+        "description": "Подключите облачный аккаунт EG4 для полного доступа ко всем функциям, включая GridBOSS, быструю зарядку и обновления прошивки. Вы можете добавить локальные устройства позже для более быстрого опроса.",
+        "menu_options": {
+          "cloud_credentials": "Подключить облачный аккаунт",
+          "local_device_type": "Пропустить — только локально"
+        }
+      },
+      "cloud_credentials": {
+        "title": "Учётные данные облачного API {brand_name}",
+        "description": "Подключитесь к вашему аккаунту {brand_name} Web Monitor для управления солнечными инверторами, устройствами GridBOSS и аккумуляторными системами.",
+        "data": {
+          "username": "Имя пользователя",
+          "password": "Пароль",
+          "base_url": "Базовый URL",
+          "verify_ssl": "Проверка SSL-сертификата",
+          "dst_sync": "Синхронизация летнего времени"
+        },
+        "data_description": {
+          "username": "Имя пользователя вашего аккаунта {brand_name} Web Monitor",
+          "password": "Пароль вашего аккаунта {brand_name} Web Monitor",
+          "base_url": "Базовый URL для API {brand_name} Web Monitor",
+          "verify_ssl": "Включить проверку SSL-сертификата для безопасного соединения",
+          "dst_sync": "Автоматически синхронизировать настройки летнего времени с инвертором на основе часового пояса Home Assistant"
+        }
+      },
+      "cloud_station": {
+        "title": "Выбор станции",
+        "description": "Выберите солнечную станцию/установку для мониторинга.",
+        "data": {
+          "plant_id": "Станция/Установка"
+        },
+        "data_description": {
+          "plant_id": "Выберите солнечную установку, которую хотите отслеживать"
+        }
+      },
+      "cloud_add_local": {
+        "title": "Добавить локальные устройства?",
+        "description": "Облачное соединение готово. Вы можете дополнительно добавить локальные устройства для более быстрого опроса (обновления каждые 5 секунд через Modbus/Dongle вместо 30-секундного облачного опроса).",
+        "menu_options": {
+          "local_device_type": "Добавить локальное устройство",
+          "cloud_finish": "Завершить (только облако)"
+        }
+      },
+      "local_device_type": {
+        "title": "Выбор подключения устройства",
+        "description": "Выберите способ локального подключения устройства.",
+        "menu_options": {
+          "network_scan_config": "Сканировать сеть (автообнаружение)",
+          "local_modbus": "Modbus TCP (ручной ввод)",
+          "local_serial": "USB Serial (адаптер RS485)",
+          "local_dongle": "WiFi Dongle (ручной ввод)"
+        }
+      },
+      "network_scan_config": {
+        "title": "Настройки сканирования сети",
+        "description": "Сканировать локальную сеть на наличие устройств {brand_name}. Устройства Modbus (порт 502) полностью идентифицируются. Кандидаты WiFi dongle (порт 8000) требуют ввода серийных номеров после обнаружения.",
+        "data": {
+          "ip_range": "Диапазон IP (CIDR)",
+          "scan_modbus": "Сканировать Modbus TCP (порт 502)",
+          "scan_dongle": "Сканировать WiFi Dongles (порт 8000)",
+          "timeout": "Таймаут соединения (секунды)"
+        },
+        "data_description": {
+          "ip_range": "Сетевой диапазон в нотации CIDR (например, 192.168.1.0/24). Автоматически определяется из сети Home Assistant.",
+          "timeout": "Время ожидания ответа от каждого устройства. Меньше = быстрее сканирование, больше = надёжнее."
+        }
+      },
+      "network_scan_progress": {
+        "title": "Сканирование сети...",
+        "description": "Сканирование локальной сети на наличие устройств {brand_name}. Это может занять несколько минут."
+      },
+      "network_scan_results": {
+        "title": "Найдено устройств: {device_count}",
+        "description": "Выберите устройство из результатов сканирования (просканировано {scanned_range}). Устройства Modbus полностью идентифицированы. Кандидаты dongle требуют ввода серийных номеров на следующем экране.",
+        "data": {
+          "device": "Выберите устройство"
+        }
+      },
+      "network_scan_empty": {
+        "title": "Устройства не найдены",
+        "description": "Сканирование сети {scanned_range} не обнаружило устройств {brand_name}. Вы можете ввести данные подключения вручную.",
+        "menu_options": {
+          "local_modbus": "Ввести Modbus вручную",
+          "local_dongle": "Ввести Dongle вручную"
+        }
+      },
+      "local_modbus": {
+        "title": "Подключение через Modbus TCP",
+        "description": "Введите IP-адрес вашего шлюза Modbus TCP. Серийный номер, модель и версия прошивки устройства определяются автоматически.",
+        "data": {
+          "modbus_host": "IP-адрес шлюза",
+          "modbus_port": "Порт",
+          "modbus_unit_id": "ID устройства"
+        },
+        "data_description": {
+          "modbus_host": "IP-адрес вашего адаптера RS485-Ethernet (например, 192.168.1.100)",
+          "modbus_port": "TCP-порт (по умолчанию: 502)",
+          "modbus_unit_id": "ID подчинённого устройства Modbus (по умолчанию: 1)"
+        }
+      },
+      "local_dongle": {
+        "title": "Подключение через WiFi Dongle",
+        "description": "Введите данные подключения dongle. Серийный номер dongle указан на этикетке устройства (также является именем точки доступа WiFi). Примечание: Последние обновления прошивки могут блокировать этот доступ.",
+        "data": {
+          "dongle_host": "IP-адрес Dongle",
+          "dongle_serial": "Серийный номер Dongle",
+          "inverter_serial": "Серийный номер инвертора",
+          "dongle_port": "Порт"
+        },
+        "data_description": {
+          "dongle_host": "IP-адрес вашего WiFi dongle в локальной сети",
+          "dongle_serial": "10-символьный серийный номер dongle (BJ/BA для инверторов, DJ для GridBOSS)",
+          "inverter_serial": "10-символьный серийный номер с таблички устройства (требуется для аутентификации)",
+          "dongle_port": "TCP-порт (по умолчанию: 8000)"
+        }
+      },
+      "local_serial": {
+        "title": "Подключение через USB Serial",
+        "description": "Выберите ваш адаптер USB-RS485. Серийный номер, модель и версия прошивки устройства определяются автоматически.",
+        "data": {
+          "serial_port": "Последовательный порт",
+          "serial_baudrate": "Скорость передачи",
+          "serial_parity": "Чётность",
+          "serial_stopbits": "Стоп-биты",
+          "modbus_unit_id": "ID устройства"
+        },
+        "data_description": {
+          "serial_port": "Выберите адаптер USB serial или введите вручную",
+          "serial_baudrate": "Скорость связи (по умолчанию: 19200)",
+          "serial_parity": "Настройка бита чётности (по умолчанию: нет)",
+          "serial_stopbits": "Количество стоп-битов (по умолчанию: 1)",
+          "modbus_unit_id": "ID подчинённого устройства Modbus (по умолчанию: 1)"
+        }
+      },
+      "local_serial_manual": {
+        "title": "Ввод пути последовательного порта",
+        "description": "Введите путь к вашему адаптеру USB-RS485 вручную.",
+        "data": {
+          "serial_port": "Путь к последовательному порту"
+        },
+        "data_description": {
+          "serial_port": "например, /dev/ttyUSB0 (Linux), COM1 (Windows), /dev/tty.usbserial-* (macOS)"
+        }
+      },
+      "local_device_confirmed": {
+        "title": "Подтверждение устройства",
+        "description": "**{device_type}**: {device_model}\n**Серийный номер**: {device_serial}\n**Семейство**: {device_family}\n**Прошивка**: {device_firmware}\n**Мощность PV**: {device_pv_power}Вт | **SOC батареи**: {device_battery_soc}%\n\nВыберите тип электросети:",
+        "data": {
+          "grid_type": "Тип сети"
+        },
+        "data_description": {
+          "grid_type": "Split Phase для US 120В/240В (L1/L2), Однофазная для Бразилии 220В или EU 230В, Трехфазная для систем R/S/T"
+        }
+      },
+      "local_device_added": {
+        "title": "Устройство добавлено",
+        "description": "Устройство #{device_count} успешно добавлено. Что дальше?",
+        "menu_options": {
+          "local_device_type": "Добавить еще устройство",
+          "local_add_cloud": "Добавить учетные данные облака",
+          "local_finish": "Завершить настройку"
+        }
+      },
+      "local_finish": {
+        "title": "Назовите вашу установку",
+        "description": "Дайте вашей солнечной установке понятное название.\n\n**Настроенные устройства**: {device_summary}",
+        "data": {
+          "station_name": "Название установки (необязательно)"
+        },
+        "data_description": {
+          "station_name": "Оставьте пустым, чтобы использовать модель и серийный номер устройства в качестве названия"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Повторная аутентификация {brand_name}",
+        "description": "Ваша сессия истекла. Введите пароль заново для восстановления доступа.",
+        "data": {
+          "password": "Пароль"
+        },
+        "data_description": {
+          "password": "Пароль вашего аккаунта {brand_name} Web Monitor"
+        }
+      },
+      "reconfigure_menu": {
+        "title": "Перенастройка",
+        "description": "Что вы хотите изменить?",
+        "menu_options": {
+          "reconfigure_cloud_update": "Обновить облачные учётные данные",
+          "reconfigure_cloud_remove": "Удалить облачное соединение",
+          "reconfigure_cloud_add": "Добавить облачные учётные данные",
+          "reconfigure_devices": "Управление локальными устройствами"
+        }
+      },
+      "reconfigure_cloud_update": {
+        "title": "Обновление облачных учётных данных",
+        "description": "Обновите учётные данные вашего аккаунта {brand_name} Web Monitor.",
+        "data": {
+          "username": "Имя пользователя",
+          "password": "Пароль",
+          "base_url": "Базовый URL",
+          "verify_ssl": "Проверка SSL-сертификата",
+          "dst_sync": "Синхронизация летнего времени"
+        },
+        "data_description": {
+          "username": "Имя пользователя вашего аккаунта {brand_name} Web Monitor",
+          "password": "Пароль вашего аккаунта {brand_name} Web Monitor",
+          "base_url": "Базовый URL для API {brand_name} Web Monitor",
+          "verify_ssl": "Включить проверку SSL-сертификата для безопасного соединения",
+          "dst_sync": "Автоматически синхронизировать настройки летнего времени"
+        }
+      },
+      "reconfigure_cloud_add": {
+        "title": "Добавление облачных учётных данных",
+        "description": "Добавьте учётные данные облачного API для доступа к информации о батареях, удалённому управлению и обнаружению устройств.",
+        "data": {
+          "username": "Имя пользователя",
+          "password": "Пароль",
+          "base_url": "Базовый URL",
+          "verify_ssl": "Проверка SSL-сертификата",
+          "dst_sync": "Синхронизация летнего времени"
+        },
+        "data_description": {
+          "username": "Имя пользователя вашего аккаунта {brand_name} Web Monitor",
+          "password": "Пароль вашего аккаунта {brand_name} Web Monitor",
+          "base_url": "Базовый URL для API {brand_name} Web Monitor",
+          "verify_ssl": "Включить проверку SSL-сертификата для безопасного соединения",
+          "dst_sync": "Автоматически синхронизировать настройки летнего времени"
+        }
+      },
+      "reconfigure_cloud_station": {
+        "title": "Изменение станции",
+        "description": "Выберите другую солнечную станцию/установку для мониторинга.",
+        "data": {
+          "plant_id": "Станция/Установка"
+        },
+        "data_description": {
+          "plant_id": "Выберите солнечную установку, которую хотите отслеживать"
+        }
+      },
+      "reconfigure_cloud_remove": {
+        "title": "Удаление облачного соединения",
+        "description": "Это удалит облачные учётные данные из вашей конфигурации. Локальные устройства продолжат работать.\n\nФункции, требующие облако, будут отключены:\n- Переключатель быстрой зарядки\n- Уведомления об обновлении прошивки\n\nВсе остальные элементы управления (резервное питание батареи, зарядка от сети, лимиты SOC и т.д.) работают локально через регистры Modbus.",
+        "submit": "Удалить облачное соединение"
+      },
+      "reconfigure_devices": {
+        "title": "Управление локальными устройствами",
+        "description": "{device_list}",
+        "menu_options": {
+          "reconfigure_device_add": "Добавить устройство",
+          "reconfigure_device_remove": "Удалить устройство",
+          "reconfigure_devices_save": "Сохранить и закрыть"
+        }
+      },
+      "reconfigure_device_remove": {
+        "title": "Удаление локального устройства",
+        "description": "Выберите устройство для удаления из этой конфигурации.",
+        "data": {
+          "device": "Устройство"
+        }
+      },
+      "reconfigure_device_add": {
+        "title": "Добавление локального устройства",
+        "description": "Выберите тип подключения для нового устройства.",
+        "menu_options": {
+          "network_scan_config": "Сканировать сеть (автообнаружение)",
+          "reconfigure_add_modbus": "Modbus TCP (ручной ввод)",
+          "reconfigure_add_serial": "USB Serial (адаптер RS485)",
+          "reconfigure_add_dongle": "WiFi Dongle (ручной ввод)"
+        }
+      },
+      "reconfigure_add_modbus": {
+        "title": "Добавление устройства Modbus",
+        "description": "Настройте новое подключение Modbus TCP. Информация об устройстве определяется автоматически.",
+        "data": {
+          "modbus_host": "IP-адрес шлюза",
+          "modbus_port": "Порт",
+          "modbus_unit_id": "ID устройства"
+        },
+        "data_description": {
+          "modbus_host": "IP-адрес вашего адаптера RS485-Ethernet (например, 192.168.1.100)",
+          "modbus_port": "TCP-порт (по умолчанию: 502)",
+          "modbus_unit_id": "ID подчинённого устройства Modbus (по умолчанию: 1)"
+        }
+      },
+      "reconfigure_add_dongle": {
+        "title": "Добавление устройства WiFi Dongle",
+        "description": "Настройте новое подключение WiFi dongle. Информация об устройстве определяется автоматически.",
+        "data": {
+          "dongle_host": "IP-адрес Dongle",
+          "dongle_serial": "Серийный номер Dongle",
+          "inverter_serial": "Серийный номер инвертора",
+          "dongle_port": "Порт"
+        },
+        "data_description": {
+          "dongle_host": "IP-адрес вашего WiFi dongle в локальной сети",
+          "dongle_serial": "10-символьный серийный номер dongle (BJ/BA для инверторов, DJ для GridBOSS)",
+          "inverter_serial": "10-символьный серийный номер с таблички устройства (требуется для аутентификации)",
+          "dongle_port": "TCP-порт (по умолчанию: 8000)"
+        }
+      },
+      "reconfigure_add_serial": {
+        "title": "Добавление устройства USB Serial",
+        "description": "Настройте новое подключение USB-RS485 serial. Информация об устройстве определяется автоматически.",
+        "data": {
+          "serial_port": "Последовательный порт",
+          "serial_baudrate": "Скорость передачи",
+          "serial_parity": "Чётность",
+          "serial_stopbits": "Стоп-биты",
+          "modbus_unit_id": "ID устройства"
+        },
+        "data_description": {
+          "serial_port": "Выберите адаптер USB serial или введите вручную",
+          "serial_baudrate": "Скорость связи (по умолчанию: 19200)",
+          "serial_parity": "Настройка бита чётности (по умолчанию: нет)",
+          "serial_stopbits": "Количество стоп-битов (по умолчанию: 1)",
+          "modbus_unit_id": "ID подчинённого устройства Modbus (по умолчанию: 1)"
+        }
+      },
+      "reconfigure_add_serial_manual": {
+        "title": "Ввод пути последовательного порта",
+        "description": "Введите путь к вашему адаптеру USB-RS485 вручную.",
+        "data": {
+          "serial_port": "Путь к последовательному порту"
+        },
+        "data_description": {
+          "serial_port": "например, /dev/ttyUSB0 (Linux), COM1 (Windows), /dev/tty.usbserial-* (macOS)"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Не удалось подключиться к {brand_name} Web Monitor. Проверьте сетевое подключение и попробуйте снова.",
+      "invalid_auth": "Неверное имя пользователя или пароль. Проверьте учётные данные и попробуйте снова.",
+      "unknown": "Произошла непредвиденная ошибка. Попробуйте снова или проверьте журналы для получения подробной информации.",
+      "no_plants": "В вашем аккаунте не найдено солнечных станций/установок. Убедитесь, что в вашем аккаунте {brand_name} Web Monitor настроена хотя бы одна станция.",
+      "invalid_plant": "Выбранная станция/установка больше недоступна. Выберите другую станцию.",
+      "timeout": "Превышено время ожидания подключения к {brand_name} Web Monitor. Проверьте интернет-соединение и попробуйте снова.",
+      "modbus_not_installed": "Библиотека pymodbus не установлена. Установите её командой: pip install pymodbus",
+      "modbus_timeout": "Превышено время ожидания подключения Modbus. Проверьте IP-адрес и убедитесь, что шлюз Modbus включён и подключён.",
+      "modbus_connection_failed": "Не удалось подключиться к шлюзу Modbus. Проверьте: (1) правильность IP-адреса, (2) порт 502 не заблокирован, (3) Modbus TCP включён на шлюзе.",
+      "dongle_timeout": "Превышено время ожидания подключения к WiFi dongle. Проверьте IP-адрес и убедитесь, что dongle подключён к сети.",
+      "dongle_connection_failed": "Не удалось подключиться к WiFi dongle. Проверьте: (1) правильность IP-адреса, (2) порт 8000 не заблокирован, (3) прошивка dongle поддерживает локальный доступ (последние обновления могут блокировать его).",
+      "duplicate_serial": "Устройство с таким серийным номером уже добавлено в эту установку.",
+      "duplicate_transport": "Устройство по этому адресу и порту уже добавлено. Каждое локальное подключение должно использовать уникальную комбинацию хост:порт.",
+      "serial_mismatch": "Устройство по этому адресу имеет другой серийный номер, чем ожидалось. Это может указывать на замену устройства или ошибку конфигурации.",
+      "serial_timeout": "Превышено время ожидания подключения к последовательному порту. Проверьте путь к порту и убедитесь, что USB-адаптер подключён.",
+      "serial_permission_denied": "Отказано в доступе к последовательному порту. В Linux убедитесь, что ваш пользователь входит в группу 'dialout'. В macOS предоставьте Home Assistant доступ к USB-устройству.",
+      "serial_port_error": "Не удалось открыть последовательный порт. Проверьте: (1) правильность пути к порту, (2) USB-адаптер подключён, (3) устройство не используется другим приложением.",
+      "serial_port_in_use": "Последовательный порт уже используется другим приложением. Закройте другие приложения, использующие этот порт, и попробуйте снова.",
+      "invalid_ip_range": "Недопустимый диапазон IP. Используйте нотацию CIDR (например, 192.168.1.0/24) или диапазон через дефис (например, 192.168.1.1-192.168.1.254). Разрешены только частные IP-диапазоны.",
+      "no_scan_type_selected": "Выберите хотя бы один тип сканирования (Modbus или Dongle)."
+    },
+    "abort": {
+      "already_configured": "Эта станция {brand_name} Web Monitor уже настроена. Каждая станция требует отдельного экземпляра интеграции.",
+      "reauth_successful": "Повторная аутентификация успешна! Ваша интеграция {brand_name} Web Monitor восстановлена.",
+      "reconfigure_successful": "Перенастройка успешна! Настройки вашего {brand_name} Web Monitor обновлены.",
+      "entry_not_found": "Запись конфигурации не найдена. Интеграция могла быть удалена. Добавьте её снова на странице интеграций.",
+      "serial_already_configured": "Инвертор {serial} уже настроен в \"{entry_title}\". Сначала удалите эту запись или используйте поток перенастройки для изменения типа подключения."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Настройки {brand_name} Web Monitor",
+        "description": "Настройте интервалы опроса для вашей интеграции {brand_name} Web Monitor. Обновление датчиков определяет, как часто запрашиваются данные устройств. Обновление параметров определяет, как часто синхронизируются настройки конфигурации.",
+        "data": {
+          "sensor_update_interval": "Интервал обновления датчиков (секунды)",
+          "modbus_update_interval": "Интервал обновления Modbus (секунды)",
+          "dongle_update_interval": "Интервал обновления WiFi донгла (секунды)",
+          "http_polling_interval": "Интервал опроса HTTP/облака (секунды)",
+          "parameter_refresh_interval": "Интервал обновления параметров (минуты)",
+          "library_debug": "Отладочное логирование библиотеки",
+          "data_validation": "Валидация данных регистров",
+          "include_ac_couple_pv": "Включить PV с AC-связью в итоги"
+        },
+        "data_description": {
+          "sensor_update_interval": "Как часто опрашивать обновления датчиков ({min_sensor_interval}-{max_sensor_interval} секунд). Меньшие значения обеспечивают более быстрые обновления, но увеличивают нагрузку на API.",
+          "modbus_update_interval": "Частота опроса устройств Modbus TCP/Serial ({min_modbus_interval}-{max_modbus_interval} секунд). Меньшие значения обеспечивают более быстрые обновления, но увеличивают трафик шины.",
+          "dongle_update_interval": "Частота опроса WiFi донглов ({min_dongle_interval}-{max_dongle_interval} секунд). WiFi-соединения могут требовать более длинных интервалов, чем Modbus, для стабильности.",
+          "http_polling_interval": "Как часто опрашивать облачный API для получения данных ({min_http_interval}-{max_http_interval} секунд). Более высокие значения снижают нагрузку на API. В гибридном режиме это управляет только облачными данными; данные локального транспорта обновляются с интервалом датчика.",
+          "parameter_refresh_interval": "Как часто обновлять параметры инвертора, такие как лимиты SOC и настройки зарядки ({min_param_interval}-{max_param_interval} минут).",
+          "library_debug": "Включить DEBUG-логирование для библиотеки pylxpweb (показывает запросы API, ответы и внутренние операции библиотеки)",
+          "data_validation": "Включить обнаружение повреждений для локального чтения регистров. Проверяет физические границы (SoC, частота, статус смарт-портов) и монотонность энергии. Включайте только при нестабильных показаниях (фантомные объекты, скачки энергии, недопустимые значения).",
+          "include_ac_couple_pv": "Добавить мощность солнечного инвертора с AC-связью (от Smart Ports GridBOSS) к итогам PV параллельной группы"
+        }
+      }
+    }
+  },
+  "selector": {
+    "operating_mode": {
+      "options": {
+        "normal": "Нормальный",
+        "standby": "Ожидание"
+      }
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "dongle_connectivity": {
+        "name": "Связь с Dongle",
+        "state": {
+          "on": "Подключён",
+          "off": "Отключён"
+        }
+      }
+    },
+    "sensor": {
+      "ac_power": {
+        "name": "Мощность AC"
+      },
+      "ac_voltage": {
+        "name": "Напряжение AC"
+      },
+      "ac_current": {
+        "name": "Ток AC"
+      },
+      "frequency": {
+        "name": "Частота"
+      },
+      "dc_power": {
+        "name": "Мощность DC"
+      },
+      "dc_voltage": {
+        "name": "Напряжение DC"
+      },
+      "dc_current": {
+        "name": "Ток DC"
+      },
+      "battery_power": {
+        "name": "Мощность батареи"
+      },
+      "battery_voltage": {
+        "name": "Напряжение батареи"
+      },
+      "battery_current": {
+        "name": "Ток батареи"
+      },
+      "state_of_charge": {
+        "name": "Уровень заряда"
+      },
+      "state_of_health": {
+        "name": "Состояние здоровья"
+      },
+      "total_energy": {
+        "name": "Общая энергия"
+      },
+      "daily_energy": {
+        "name": "Энергия за день"
+      },
+      "monthly_energy": {
+        "name": "Энергия за месяц"
+      },
+      "yearly_energy": {
+        "name": "Энергия за год"
+      },
+      "internal_temperature": {
+        "name": "Внутренняя температура"
+      },
+      "radiator1_temperature": {
+        "name": "Температура радиатора 1"
+      },
+      "radiator2_temperature": {
+        "name": "Температура радиатора 2"
+      },
+      "bt_temperature": {
+        "name": "Температура BT"
+      },
+      "status_code": {
+        "name": "Код статуса"
+      },
+      "status_text": {
+        "name": "Статус"
+      },
+      "grid_power": {
+        "name": "Мощность сети"
+      },
+      "load_power": {
+        "name": "Мощность нагрузки"
+      },
+      "pv_total_power": {
+        "name": "Общая мощность PV"
+      },
+      "pv1_power": {
+        "name": "Мощность PV1"
+      },
+      "pv2_power": {
+        "name": "Мощность PV2"
+      },
+      "pv3_power": {
+        "name": "Мощность PV3"
+      },
+      "cell_voltage_max": {
+        "name": "Максимальное напряжение ячейки"
+      },
+      "cell_voltage_min": {
+        "name": "Минимальное напряжение ячейки"
+      },
+      "cell_voltage_delta": {
+        "name": "Разница напряжений ячеек"
+      },
+      "cycle_count": {
+        "name": "Количество циклов"
+      },
+      "firmware_version": {
+        "name": "Версия прошивки"
+      },
+      "grid_voltage_r": {
+        "name": "Напряжение сети R"
+      },
+      "grid_voltage_s": {
+        "name": "Напряжение сети S"
+      },
+      "grid_voltage_t": {
+        "name": "Напряжение сети T"
+      },
+      "grid_voltage": {
+        "name": "Напряжение сети"
+      },
+      "grid_frequency": {
+        "name": "Частота сети"
+      },
+      "eps_voltage_r": {
+        "name": "Напряжение EPS R"
+      },
+      "eps_voltage_s": {
+        "name": "Напряжение EPS S"
+      },
+      "eps_voltage_t": {
+        "name": "Напряжение EPS T"
+      },
+      "eps_voltage": {
+        "name": "Напряжение EPS"
+      },
+      "eps_frequency": {
+        "name": "Частота EPS"
+      },
+      "eps_power": {
+        "name": "Мощность EPS"
+      },
+      "eps_power_l1": {
+        "name": "Мощность EPS L1"
+      },
+      "eps_power_l2": {
+        "name": "Мощность EPS L2"
+      },
+      "eps_apparent_power_l1": {
+        "name": "Полная мощность EPS L1"
+      },
+      "eps_apparent_power_l2": {
+        "name": "Полная мощность EPS L2"
+      },
+      "eps_energy_today_l1": {
+        "name": "Энергия EPS сегодня L1"
+      },
+      "eps_energy_today_l2": {
+        "name": "Энергия EPS сегодня L2"
+      },
+      "eps_energy_total_l1": {
+        "name": "Энергия EPS всего L1"
+      },
+      "eps_energy_total_l2": {
+        "name": "Энергия EPS всего L2"
+      },
+      "inverter_power_l1": {
+        "name": "Мощность инвертора L1"
+      },
+      "inverter_power_l2": {
+        "name": "Мощность инвертора L2"
+      },
+      "rectifier_power_l1": {
+        "name": "Мощность выпрямителя L1"
+      },
+      "rectifier_power_l2": {
+        "name": "Мощность выпрямителя L2"
+      },
+      "grid_export_power_l1": {
+        "name": "Экспорт в сеть L1"
+      },
+      "grid_export_power_l2": {
+        "name": "Экспорт в сеть L2"
+      },
+      "grid_import_power_l1": {
+        "name": "Импорт из сети L1"
+      },
+      "grid_import_power_l2": {
+        "name": "Импорт из сети L2"
+      },
+      "generator_voltage_l1": {
+        "name": "Напряжение генератора L1"
+      },
+      "generator_voltage_l2": {
+        "name": "Напряжение генератора L2"
+      },
+      "power_output": {
+        "name": "Выходная мощность"
+      },
+      "rectifier_power": {
+        "name": "Мощность выпрямителя"
+      },
+      "ac_couple_power": {
+        "name": "Мощность AC-связи"
+      },
+      "bus1_voltage": {
+        "name": "Напряжение шины 1"
+      },
+      "bus2_voltage": {
+        "name": "Напряжение шины 2"
+      },
+      "total_load_power": {
+        "name": "Общая мощность нагрузки"
+      },
+      "smart_port1_status": {
+        "name": "Статус Smart Port 1",
+        "state": {
+          "unused": "Не используется",
+          "smart_load": "Smart Load",
+          "ac_couple": "AC Couple"
+        }
+      },
+      "smart_port2_status": {
+        "name": "Статус Smart Port 2",
+        "state": {
+          "unused": "Не используется",
+          "smart_load": "Smart Load",
+          "ac_couple": "AC Couple"
+        }
+      },
+      "smart_port3_status": {
+        "name": "Статус Smart Port 3",
+        "state": {
+          "unused": "Не используется",
+          "smart_load": "Smart Load",
+          "ac_couple": "AC Couple"
+        }
+      },
+      "smart_port4_status": {
+        "name": "Статус Smart Port 4",
+        "state": {
+          "unused": "Не используется",
+          "smart_load": "Smart Load",
+          "ac_couple": "AC Couple"
+        }
+      },
+      "battery_bank_charge_rate": {
+        "name": "Скорость заряда аккумуляторного блока"
+      },
+      "battery_charge_rate": {
+        "name": "Скорость заряда"
+      },
+      "parallel_battery_charge_rate": {
+        "name": "Скорость заряда батареи"
+      }
+    },
+    "switch": {
+      "quick_charge": {
+        "name": "Быстрая зарядка"
+      },
+      "battery_backup_eps": {
+        "name": "Резервное питание батареи (EPS)"
+      },
+      "off_grid_mode": {
+        "name": "Автономный режим"
+      }
+    },
+    "number": {
+      "system_charge_soc_limit": {
+        "name": "Лимит SOC системной зарядки"
+      },
+      "ac_charge_power": {
+        "name": "Мощность зарядки от сети"
+      },
+      "pv_charge_power": {
+        "name": "Мощность зарядки от PV"
+      },
+      "pv_start_voltage": {
+        "name": "Напряжение запуска PV"
+      },
+      "ac_charge_soc_limit": {
+        "name": "Лимит SOC зарядки от сети"
+      },
+      "soc_cutoff": {
+        "name": "Порог отключения SOC"
+      }
+    },
+    "button": {
+      "refresh_data": {
+        "name": "Обновить данные"
+      }
+    },
+    "select": {
+      "operating_mode": {
+        "name": "Режим работы",
+        "state": {
+          "normal": "Нормальный",
+          "standby": "Ожидание"
+        }
+      },
+      "pv_input_mode": {
+        "name": "Режим входа PV",
+        "state": {
+          "no_pv": "NO PV",
+          "pv1": "PV1",
+          "pv2": "PV2",
+          "pv3": "PV3",
+          "pv1_pv2": "PV1 & PV2",
+          "pv1_pv3": "PV1 & PV3",
+          "pv2_pv3": "PV2 & PV3",
+          "pv1_pv2_pv3": "PV1 & PV2 & PV3"
+        }
+      }
+    }
+  },
+  "services": {
+    "refresh_data": {
+      "name": "Обновить данные",
+      "description": "Принудительно обновить данные устройства из API {brand_name}, минуя обычный интервал опроса.",
+      "fields": {
+        "entry_id": {
+          "name": "ID записи конфигурации",
+          "description": "ID записи конфигурации для обновления. Если не указан, будут обновлены все интеграции {brand_name} Web Monitor."
+        }
+      }
+    },
+    "reconcile_history": {
+      "name": "Сверка истории энергии",
+      "description": "Заполнение пропущенных статистик энергии из облачного API {brand_name}. Этот сервис получает исторические данные об энергии и импортирует их в базу данных статистики Home Assistant для любых пробелов в истории ваших датчиков энергии. Требуются облачные учётные данные (режим подключения HTTP или гибридный).",
+      "fields": {
+        "lookback_hours": {
+          "name": "Часы ретроспективы",
+          "description": "Количество часов для поиска пробелов в статистике энергии. По умолчанию 48 часов."
+        },
+        "start_date": {
+          "name": "Дата начала",
+          "description": "Явная дата начала для сверки (формат ГГГГ-ММ-ДД). Если указана, также требуется end_date."
+        },
+        "end_date": {
+          "name": "Дата окончания",
+          "description": "Явная дата окончания для сверки (формат ГГГГ-ММ-ДД). Если указана, также требуется start_date."
+        },
+        "entry_id": {
+          "name": "ID записи конфигурации",
+          "description": "ID записи конфигурации для сверки. Если не указан, будут сверены все интеграции {brand_name} Web Monitor с облачными учётными данными."
+        }
+      }
+    }
+  },
+  "exceptions": {
+    "entry_not_found": {
+      "message": "Запись конфигурации {entry_id} не найдена. Проверьте правильность ID записи."
+    },
+    "entry_not_loaded": {
+      "message": "Запись конфигурации {entry_id} не загружена. Убедитесь, что интеграция правильно настроена и работает."
+    },
+    "no_coordinators": {
+      "message": "Не найдены координаторы {brand_name} для обновления. Убедитесь, что настроена и загружена хотя бы одна интеграция {brand_name} Web Monitor."
+    },
+    "invalid_date_format": {
+      "message": "Неверный формат даты. Используйте формат ГГГГ-ММ-ДД."
+    }
+  },
+  "issues": {
+    "dongle_validation_disabled": {
+      "title": "Рекомендуется валидация данных для WiFi dongle",
+      "description": "WiFi dongle настроен, но **Валидация данных** отключена. WiFi dongle используют общую шину Modbus, и одновременное чтение может вызвать повреждение данных регистров (например, скачки энергии).\n\nДля исправления перейдите в **Настройки > Устройства и службы > EG4 Web Monitor > Настройка** и включите **Валидацию данных**."
+    }
+  }
+}

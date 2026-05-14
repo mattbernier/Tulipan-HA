@@ -1,0 +1,770 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "EG4 Web Monitor セットアップ",
+        "description": "EG4クラウドアカウントに接続すると、GridBOSS、クイックチャージ、ファームウェア更新など、すべての機能にアクセスできます。後からローカルデバイスを追加して、より高速なポーリングも可能です。",
+        "menu_options": {
+          "cloud_credentials": "クラウドアカウントに接続",
+          "local_device_type": "スキップ — ローカルのみ"
+        }
+      },
+      "cloud_credentials": {
+        "title": "{brand_name} クラウドAPI認証情報",
+        "description": "{brand_name} Web Monitorアカウントに接続して、ソーラーインバーター、GridBOSSデバイス、バッテリーシステムを管理します。",
+        "data": {
+          "username": "ユーザー名",
+          "password": "パスワード",
+          "base_url": "ベースURL",
+          "verify_ssl": "SSL証明書の検証",
+          "dst_sync": "夏時間同期"
+        },
+        "data_description": {
+          "username": "{brand_name} Web Monitorアカウントのユーザー名",
+          "password": "{brand_name} Web Monitorアカウントのパスワード",
+          "base_url": "{brand_name} Web Monitor APIのベースURL",
+          "verify_ssl": "安全な接続のためSSL証明書の検証を有効にする",
+          "dst_sync": "Home Assistantのタイムゾーンに基づいて、インバーターの夏時間設定を自動的に同期する"
+        }
+      },
+      "cloud_station": {
+        "title": "ステーションを選択",
+        "description": "監視するソーラーステーション/プラントを選択してください。",
+        "data": {
+          "plant_id": "ステーション/プラント"
+        },
+        "data_description": {
+          "plant_id": "監視するソーラー設備を選択してください"
+        }
+      },
+      "cloud_add_local": {
+        "title": "ローカルデバイスを追加しますか？",
+        "description": "クラウド接続の準備ができました。オプションで、より高速なポーリング（クラウドの30秒ポーリングに対し、Modbus/ドングル経由で5秒更新）のためにローカルデバイスを追加できます。",
+        "menu_options": {
+          "local_device_type": "ローカルデバイスを追加",
+          "cloud_finish": "完了（クラウドのみ）"
+        }
+      },
+      "local_device_type": {
+        "title": "デバイス接続を選択",
+        "description": "デバイスのローカル接続方法を選択してください。",
+        "menu_options": {
+          "network_scan_config": "ネットワークスキャン（自動検出）",
+          "local_modbus": "Modbus TCP（手動入力）",
+          "local_serial": "USBシリアル（RS485アダプター）",
+          "local_dongle": "WiFiドングル（手動入力）"
+        }
+      },
+      "network_scan_config": {
+        "title": "ネットワークスキャン設定",
+        "description": "ローカルネットワークをスキャンして{brand_name}デバイスを検出します。Modbusデバイス（ポート502）は完全に識別されます。WiFiドングル候補（ポート8000）は後でシリアル番号を入力する必要があります。",
+        "data": {
+          "ip_range": "IPレンジ（CIDR）",
+          "scan_modbus": "Modbus TCP（ポート502）をスキャン",
+          "scan_dongle": "WiFiドングル（ポート8000）をスキャン",
+          "timeout": "接続タイムアウト（秒）"
+        },
+        "data_description": {
+          "ip_range": "CIDR表記のネットワーク範囲（例：192.168.1.0/24）。Home Assistantのネットワークから自動検出されます。",
+          "timeout": "各デバイスからの応答を待つ時間。低い値=高速スキャン、高い値=より確実。"
+        }
+      },
+      "network_scan_progress": {
+        "title": "ネットワークをスキャン中...",
+        "description": "ローカルネットワークをスキャンして{brand_name}デバイスを検索しています。しばらくお待ちください。"
+      },
+      "network_scan_results": {
+        "title": "{device_count}台のデバイスが見つかりました",
+        "description": "スキャン結果からデバイスを選択してください（スキャン範囲：{scanned_range}）。Modbusデバイスは完全に識別されます。ドングル候補は次の画面でシリアル番号を入力する必要があります。",
+        "data": {
+          "device": "デバイスを選択"
+        }
+      },
+      "network_scan_empty": {
+        "title": "デバイスが見つかりません",
+        "description": "{scanned_range}のネットワークスキャンで{brand_name}デバイスが見つかりませんでした。接続情報を手動で入力できます。",
+        "menu_options": {
+          "local_modbus": "Modbusを手動で入力",
+          "local_dongle": "ドングルを手動で入力"
+        }
+      },
+      "local_modbus": {
+        "title": "Modbus TCP経由で接続",
+        "description": "Modbus TCPゲートウェイのIPアドレスを入力してください。デバイスのシリアル番号、モデル、ファームウェアは自動検出されます。",
+        "data": {
+          "modbus_host": "ゲートウェイIPアドレス",
+          "modbus_port": "ポート",
+          "modbus_unit_id": "ユニットID"
+        },
+        "data_description": {
+          "modbus_host": "RS485-イーサネットアダプターのIPアドレス（例：192.168.1.100）",
+          "modbus_port": "TCPポート（デフォルト：502）",
+          "modbus_unit_id": "ModbusスレーブID（デフォルト：1）"
+        }
+      },
+      "local_dongle": {
+        "title": "WiFiドングル経由で接続",
+        "description": "ドングルの接続情報を入力してください。ドングルのシリアル番号はデバイスラベルに印刷されています（WiFi AP名と同じです）。注：最近のファームウェア更新でこのアクセスがブロックされる場合があります。",
+        "data": {
+          "dongle_host": "ドングルIPアドレス",
+          "dongle_serial": "ドングルシリアル番号",
+          "inverter_serial": "インバーターシリアル番号",
+          "dongle_port": "ポート"
+        },
+        "data_description": {
+          "dongle_host": "ローカルネットワーク上のWiFiドングルのIPアドレス",
+          "dongle_serial": "10文字のドングルシリアル番号（インバーターはBJ/BA、GridBOSSはDJ）",
+          "inverter_serial": "デバイス銘板の10文字のシリアル番号（認証に必要）",
+          "dongle_port": "TCPポート（デフォルト：8000）"
+        }
+      },
+      "local_serial": {
+        "title": "USBシリアル経由で接続",
+        "description": "USB-RS485シリアルアダプターを選択してください。デバイスのシリアル番号、モデル、ファームウェアは自動検出されます。",
+        "data": {
+          "serial_port": "シリアルポート",
+          "serial_baudrate": "ボーレート",
+          "serial_parity": "パリティ",
+          "serial_stopbits": "ストップビット",
+          "modbus_unit_id": "ユニットID"
+        },
+        "data_description": {
+          "serial_port": "USBシリアルアダプターを選択するか、手動で入力",
+          "serial_baudrate": "通信速度（デフォルト：19200）",
+          "serial_parity": "パリティビット設定（デフォルト：なし）",
+          "serial_stopbits": "ストップビット数（デフォルト：1）",
+          "modbus_unit_id": "ModbusスレーブID（デフォルト：1）"
+        }
+      },
+      "local_serial_manual": {
+        "title": "シリアルポートパスを入力",
+        "description": "USB-RS485シリアルアダプターのパスを手動で入力してください。",
+        "data": {
+          "serial_port": "シリアルポートパス"
+        },
+        "data_description": {
+          "serial_port": "例：/dev/ttyUSB0（Linux）、COM1（Windows）、/dev/tty.usbserial-*（macOS）"
+        }
+      },
+      "local_device_confirmed": {
+        "title": "デバイスの確認",
+        "description": "**{device_type}**: {device_model}\n**シリアル**: {device_serial}\n**ファミリー**: {device_family}\n**ファームウェア**: {device_firmware}\n**PV電力**: {device_pv_power}W | **バッテリーSOC**: {device_battery_soc}%\n\n電力系統のタイプを選択してください：",
+        "data": {
+          "grid_type": "系統タイプ"
+        },
+        "data_description": {
+          "grid_type": "スプリットフェーズ（US 120V/240V L1/L2）、単相（ブラジル220VまたはEU 230V）、三相（R/S/Tシステム）"
+        }
+      },
+      "local_device_added": {
+        "title": "デバイス追加完了",
+        "description": "デバイス #{device_count} が正常に追加されました。次の操作を選択してください：",
+        "menu_options": {
+          "local_device_type": "別のデバイスを追加",
+          "local_add_cloud": "クラウド認証情報を追加",
+          "local_finish": "セットアップ完了"
+        }
+      },
+      "local_finish": {
+        "title": "設備に名前を付ける",
+        "description": "ソーラー設備にわかりやすい名前を付けてください。\n\n**設定済みデバイス**: {device_summary}",
+        "data": {
+          "station_name": "設備名（オプション）"
+        },
+        "data_description": {
+          "station_name": "空白のままにすると、デバイスのモデルとシリアル番号が名前として使用されます"
+        }
+      },
+      "reauth_confirm": {
+        "title": "{brand_name} 再認証",
+        "description": "セッションの有効期限が切れました。アクセスを復元するにはパスワードを再入力してください。",
+        "data": {
+          "password": "パスワード"
+        },
+        "data_description": {
+          "password": "{brand_name} Web Monitorアカウントのパスワード"
+        }
+      },
+      "reconfigure_menu": {
+        "title": "再設定",
+        "description": "何を変更しますか？",
+        "menu_options": {
+          "reconfigure_cloud_update": "クラウド認証情報を更新",
+          "reconfigure_cloud_remove": "クラウド接続を削除",
+          "reconfigure_cloud_add": "クラウド認証情報を追加",
+          "reconfigure_devices": "ローカルデバイスを管理"
+        }
+      },
+      "reconfigure_cloud_update": {
+        "title": "クラウド認証情報を更新",
+        "description": "{brand_name} Web Monitorアカウントの認証情報を更新します。",
+        "data": {
+          "username": "ユーザー名",
+          "password": "パスワード",
+          "base_url": "ベースURL",
+          "verify_ssl": "SSL証明書の検証",
+          "dst_sync": "夏時間同期"
+        },
+        "data_description": {
+          "username": "{brand_name} Web Monitorアカウントのユーザー名",
+          "password": "{brand_name} Web Monitorアカウントのパスワード",
+          "base_url": "{brand_name} Web Monitor APIのベースURL",
+          "verify_ssl": "安全な接続のためSSL証明書の検証を有効にする",
+          "dst_sync": "夏時間設定を自動的に同期"
+        }
+      },
+      "reconfigure_cloud_add": {
+        "title": "クラウド認証情報を追加",
+        "description": "クラウドAPI認証情報を追加して、バッテリー詳細、リモートコントロール、デバイス検出を有効にします。",
+        "data": {
+          "username": "ユーザー名",
+          "password": "パスワード",
+          "base_url": "ベースURL",
+          "verify_ssl": "SSL証明書の検証",
+          "dst_sync": "夏時間同期"
+        },
+        "data_description": {
+          "username": "{brand_name} Web Monitorアカウントのユーザー名",
+          "password": "{brand_name} Web Monitorアカウントのパスワード",
+          "base_url": "{brand_name} Web Monitor APIのベースURL",
+          "verify_ssl": "安全な接続のためSSL証明書の検証を有効にする",
+          "dst_sync": "夏時間設定を自動的に同期"
+        }
+      },
+      "reconfigure_cloud_station": {
+        "title": "ステーションを変更",
+        "description": "監視する別のソーラーステーション/プラントを選択してください。",
+        "data": {
+          "plant_id": "ステーション/プラント"
+        },
+        "data_description": {
+          "plant_id": "監視するソーラー設備を選択してください"
+        }
+      },
+      "reconfigure_cloud_remove": {
+        "title": "クラウド接続を削除",
+        "description": "この操作により、設定からクラウド認証情報が削除されます。ローカルデバイスは引き続き動作します。\n\nクラウドが必要で無効になる機能：\n- クイックチャージスイッチ\n- ファームウェア更新通知\n\nその他のすべてのコントロール（バッテリーバックアップ、AC充電、SOC制限など）はModbusレジスタ経由でローカルで動作します。",
+        "submit": "クラウド接続を削除"
+      },
+      "reconfigure_devices": {
+        "title": "ローカルデバイスを管理",
+        "description": "{device_list}",
+        "menu_options": {
+          "reconfigure_device_add": "デバイスを追加",
+          "reconfigure_device_remove": "デバイスを削除",
+          "reconfigure_devices_save": "保存して閉じる"
+        }
+      },
+      "reconfigure_device_remove": {
+        "title": "ローカルデバイスを削除",
+        "description": "この設定から削除するデバイスを選択してください。",
+        "data": {
+          "device": "デバイス"
+        }
+      },
+      "reconfigure_device_add": {
+        "title": "ローカルデバイスを追加",
+        "description": "新しいデバイスの接続タイプを選択してください。",
+        "menu_options": {
+          "network_scan_config": "ネットワークスキャン（自動検出）",
+          "reconfigure_add_modbus": "Modbus TCP（手動入力）",
+          "reconfigure_add_serial": "USBシリアル（RS485アダプター）",
+          "reconfigure_add_dongle": "WiFiドングル（手動入力）"
+        }
+      },
+      "reconfigure_add_modbus": {
+        "title": "Modbusデバイスを追加",
+        "description": "新しいModbus TCP接続を設定します。デバイス情報は自動検出されます。",
+        "data": {
+          "modbus_host": "ゲートウェイIPアドレス",
+          "modbus_port": "ポート",
+          "modbus_unit_id": "ユニットID"
+        },
+        "data_description": {
+          "modbus_host": "RS485-イーサネットアダプターのIPアドレス（例：192.168.1.100）",
+          "modbus_port": "TCPポート（デフォルト：502）",
+          "modbus_unit_id": "ModbusスレーブID（デフォルト：1）"
+        }
+      },
+      "reconfigure_add_dongle": {
+        "title": "WiFiドングルデバイスを追加",
+        "description": "新しいWiFiドングル接続を設定します。デバイス情報は自動検出されます。",
+        "data": {
+          "dongle_host": "ドングルIPアドレス",
+          "dongle_serial": "ドングルシリアル番号",
+          "inverter_serial": "インバーターシリアル番号",
+          "dongle_port": "ポート"
+        },
+        "data_description": {
+          "dongle_host": "ローカルネットワーク上のWiFiドングルのIPアドレス",
+          "dongle_serial": "10文字のドングルシリアル番号（インバーターはBJ/BA、GridBOSSはDJ）",
+          "inverter_serial": "デバイス銘板の10文字のシリアル番号（認証に必要）",
+          "dongle_port": "TCPポート（デフォルト：8000）"
+        }
+      },
+      "reconfigure_add_serial": {
+        "title": "USBシリアルデバイスを追加",
+        "description": "新しいUSB-RS485シリアル接続を設定します。デバイス情報は自動検出されます。",
+        "data": {
+          "serial_port": "シリアルポート",
+          "serial_baudrate": "ボーレート",
+          "serial_parity": "パリティ",
+          "serial_stopbits": "ストップビット",
+          "modbus_unit_id": "ユニットID"
+        },
+        "data_description": {
+          "serial_port": "USBシリアルアダプターを選択するか、手動で入力",
+          "serial_baudrate": "通信速度（デフォルト：19200）",
+          "serial_parity": "パリティビット設定（デフォルト：なし）",
+          "serial_stopbits": "ストップビット数（デフォルト：1）",
+          "modbus_unit_id": "ModbusスレーブID（デフォルト：1）"
+        }
+      },
+      "reconfigure_add_serial_manual": {
+        "title": "シリアルポートパスを入力",
+        "description": "USB-RS485シリアルアダプターのパスを手動で入力してください。",
+        "data": {
+          "serial_port": "シリアルポートパス"
+        },
+        "data_description": {
+          "serial_port": "例：/dev/ttyUSB0（Linux）、COM1（Windows）、/dev/tty.usbserial-*（macOS）"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "{brand_name} Web Monitorに接続できません。ネットワーク接続を確認して、再試行してください。",
+      "invalid_auth": "ユーザー名またはパスワードが正しくありません。認証情報を確認して、再試行してください。",
+      "unknown": "予期しないエラーが発生しました。再試行するか、詳細についてはログを確認してください。",
+      "no_plants": "アカウントにソーラーステーション/プラントが見つかりません。{brand_name} Web Monitorアカウントに少なくとも1つのステーションが設定されていることを確認してください。",
+      "invalid_plant": "選択したステーション/プラントは利用できなくなりました。別のステーションを選択してください。",
+      "timeout": "{brand_name} Web Monitorへの接続がタイムアウトしました。インターネット接続を確認して、再試行してください。",
+      "modbus_not_installed": "pymodbusライブラリがインストールされていません。次のコマンドでインストールしてください：pip install pymodbus",
+      "modbus_timeout": "Modbus接続がタイムアウトしました。IPアドレスを確認し、Modbusゲートウェイの電源が入っていて接続されていることを確認してください。",
+      "modbus_connection_failed": "Modbusゲートウェイへの接続に失敗しました。確認事項：(1) IPアドレスが正しい、(2) ポート502がブロックされていない、(3) ゲートウェイでModbus TCPが有効になっている。",
+      "dongle_timeout": "WiFiドングル接続がタイムアウトしました。IPアドレスを確認し、ドングルがネットワークに接続されていることを確認してください。",
+      "dongle_connection_failed": "WiFiドングルへの接続に失敗しました。確認事項：(1) IPアドレスが正しい、(2) ポート8000がブロックされていない、(3) ドングルのファームウェアがローカルアクセスをサポートしている（最近の更新でブロックされる場合があります）。",
+      "duplicate_serial": "このシリアル番号のデバイスはすでにこの設備に追加されています。",
+      "duplicate_transport": "このアドレスとポートのデバイスはすでに追加されています。各ローカル接続は一意のホスト:ポートの組み合わせを使用する必要があります。",
+      "serial_mismatch": "このアドレスのデバイスは予期されたものとは異なるシリアル番号を持っています。デバイスの交換または設定ミスの可能性があります。",
+      "serial_timeout": "シリアルポート接続がタイムアウトしました。ポートパスを確認し、USBアダプターが接続されていることを確認してください。",
+      "serial_permission_denied": "シリアルポートへのアクセス許可が拒否されました。Linuxでは、ユーザーが「dialout」グループに属していることを確認してください。macOSでは、Home AssistantにUSBデバイスへのアクセスを許可してください。",
+      "serial_port_error": "シリアルポートを開けませんでした。確認事項：(1) ポートパスが正しい、(2) USBアダプターが接続されている、(3) 別のアプリケーションがデバイスを使用していない。",
+      "serial_port_in_use": "シリアルポートはすでに別のアプリケーションによって使用されています。このポートを使用している他のアプリケーションを閉じて、再試行してください。",
+      "invalid_ip_range": "無効なIPレンジです。CIDR表記（例：192.168.1.0/24）またはダッシュ範囲（例：192.168.1.1-192.168.1.254）を使用してください。プライベートIPレンジのみが許可されています。",
+      "no_scan_type_selected": "少なくとも1つのスキャンタイプ（ModbusまたはDongle）を選択してください。"
+    },
+    "abort": {
+      "already_configured": "この{brand_name} Web Monitorステーションはすでに設定されています。各ステーションには別々のインテグレーションインスタンスが必要です。",
+      "reauth_successful": "再認証に成功しました！{brand_name} Web Monitorインテグレーションが再接続されました。",
+      "reconfigure_successful": "再設定に成功しました！{brand_name} Web Monitorの設定が更新されました。",
+      "entry_not_found": "設定エントリが見つかりません。インテグレーションが削除された可能性があります。インテグレーションページから再度追加してください。",
+      "serial_already_configured": "インバーター {serial} はすでに「{entry_title}」で設定されています。そのエントリを先に削除するか、再設定フローを使用して接続タイプを変更してください。"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "{brand_name} Web Monitor オプション",
+        "description": "{brand_name} Web Monitorインテグレーションのポーリング間隔を設定します。センサー更新はデバイスデータの取得頻度を制御します。パラメーター更新は設定の同期頻度を制御します。",
+        "data": {
+          "sensor_update_interval": "センサー更新間隔（秒）",
+          "modbus_update_interval": "Modbus更新間隔（秒）",
+          "dongle_update_interval": "WiFiドングル更新間隔（秒）",
+          "http_polling_interval": "HTTP/クラウドポーリング間隔（秒）",
+          "parameter_refresh_interval": "パラメーター更新間隔（分）",
+          "library_debug": "ライブラリデバッグログ",
+          "data_validation": "レジスタデータ検証",
+          "include_ac_couple_pv": "AC結合PVを合計に含める"
+        },
+        "data_description": {
+          "sensor_update_interval": "センサー更新のポーリング頻度（{min_sensor_interval}～{max_sensor_interval}秒）。低い値はより高速な更新を提供しますが、API負荷が増加します。",
+          "modbus_update_interval": "Modbus TCP/シリアルデバイスのポーリング頻度（{min_modbus_interval}-{max_modbus_interval}秒）。値が小さいほど更新が速くなりますが、バストラフィックが増加します。",
+          "dongle_update_interval": "WiFiドングルデバイスのポーリング頻度（{min_dongle_interval}-{max_dongle_interval}秒）。WiFi接続は安定性のためにModbusより長い間隔が必要な場合があります。",
+          "http_polling_interval": "クラウドAPIのデータ取得頻度（{min_http_interval}〜{max_http_interval}秒）。値が高いほどAPI負荷が軽減されます。ハイブリッドモードでは、クラウドデータのみを制御します。ローカルトランスポートデータはセンサー間隔で更新されます。",
+          "parameter_refresh_interval": "SOC制限や充電設定などのインバーターパラメーターの更新頻度（{min_param_interval}～{max_param_interval}分）。",
+          "library_debug": "pylxpwebライブラリのDEBUGログを有効にする（APIリクエスト、レスポンス、内部ライブラリ操作を表示）",
+          "data_validation": "ローカルレジスタ読み取りの破損検出を有効にします。物理的境界（SoC、周波数、スマートポートステータス）とエネルギー単調性を検証します。不安定なレジスタ読み取り（ゴーストエンティティ、エネルギースパイク、無効な値）が発生した場合にのみ有効にしてください。",
+          "include_ac_couple_pv": "GridBOSSスマートポートからのAC結合ソーラーインバーター電力をパラレルグループのPV合計に追加"
+        }
+      }
+    }
+  },
+  "selector": {
+    "operating_mode": {
+      "options": {
+        "normal": "通常",
+        "standby": "スタンバイ"
+      }
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "dongle_connectivity": {
+        "name": "ドングル接続状態",
+        "state": {
+          "on": "接続済み",
+          "off": "切断"
+        }
+      }
+    },
+    "sensor": {
+      "ac_power": {
+        "name": "AC電力"
+      },
+      "ac_voltage": {
+        "name": "AC電圧"
+      },
+      "ac_current": {
+        "name": "AC電流"
+      },
+      "frequency": {
+        "name": "周波数"
+      },
+      "dc_power": {
+        "name": "DC電力"
+      },
+      "dc_voltage": {
+        "name": "DC電圧"
+      },
+      "dc_current": {
+        "name": "DC電流"
+      },
+      "battery_power": {
+        "name": "バッテリー電力"
+      },
+      "battery_voltage": {
+        "name": "バッテリー電圧"
+      },
+      "battery_current": {
+        "name": "バッテリー電流"
+      },
+      "state_of_charge": {
+        "name": "充電状態"
+      },
+      "state_of_health": {
+        "name": "健全性状態"
+      },
+      "total_energy": {
+        "name": "総エネルギー"
+      },
+      "daily_energy": {
+        "name": "日次エネルギー"
+      },
+      "monthly_energy": {
+        "name": "月次エネルギー"
+      },
+      "yearly_energy": {
+        "name": "年次エネルギー"
+      },
+      "internal_temperature": {
+        "name": "内部温度"
+      },
+      "radiator1_temperature": {
+        "name": "ラジエーター1温度"
+      },
+      "radiator2_temperature": {
+        "name": "ラジエーター2温度"
+      },
+      "bt_temperature": {
+        "name": "BT温度"
+      },
+      "status_code": {
+        "name": "ステータスコード"
+      },
+      "status_text": {
+        "name": "ステータス"
+      },
+      "grid_power": {
+        "name": "系統電力"
+      },
+      "load_power": {
+        "name": "負荷電力"
+      },
+      "pv_total_power": {
+        "name": "PV総電力"
+      },
+      "pv1_power": {
+        "name": "PV1電力"
+      },
+      "pv2_power": {
+        "name": "PV2電力"
+      },
+      "pv3_power": {
+        "name": "PV3電力"
+      },
+      "cell_voltage_max": {
+        "name": "最大セル電圧"
+      },
+      "cell_voltage_min": {
+        "name": "最小セル電圧"
+      },
+      "cell_voltage_delta": {
+        "name": "セル電圧差"
+      },
+      "cycle_count": {
+        "name": "サイクル数"
+      },
+      "firmware_version": {
+        "name": "ファームウェアバージョン"
+      },
+      "grid_voltage_r": {
+        "name": "系統電圧 R相"
+      },
+      "grid_voltage_s": {
+        "name": "系統電圧 S相"
+      },
+      "grid_voltage_t": {
+        "name": "系統電圧 T相"
+      },
+      "grid_voltage": {
+        "name": "系統電圧"
+      },
+      "grid_frequency": {
+        "name": "系統周波数"
+      },
+      "eps_voltage_r": {
+        "name": "EPS電圧 R相"
+      },
+      "eps_voltage_s": {
+        "name": "EPS電圧 S相"
+      },
+      "eps_voltage_t": {
+        "name": "EPS電圧 T相"
+      },
+      "eps_voltage": {
+        "name": "EPS電圧"
+      },
+      "eps_frequency": {
+        "name": "EPS周波数"
+      },
+      "eps_power": {
+        "name": "EPS電力"
+      },
+      "eps_power_l1": {
+        "name": "EPS電力 L1"
+      },
+      "eps_power_l2": {
+        "name": "EPS電力 L2"
+      },
+      "eps_apparent_power_l1": {
+        "name": "EPS皮相電力 L1"
+      },
+      "eps_apparent_power_l2": {
+        "name": "EPS皮相電力 L2"
+      },
+      "eps_energy_today_l1": {
+        "name": "EPS本日のエネルギー L1"
+      },
+      "eps_energy_today_l2": {
+        "name": "EPS本日のエネルギー L2"
+      },
+      "eps_energy_total_l1": {
+        "name": "EPS累計エネルギー L1"
+      },
+      "eps_energy_total_l2": {
+        "name": "EPS累計エネルギー L2"
+      },
+      "inverter_power_l1": {
+        "name": "インバーター電力 L1"
+      },
+      "inverter_power_l2": {
+        "name": "インバーター電力 L2"
+      },
+      "rectifier_power_l1": {
+        "name": "整流器電力 L1"
+      },
+      "rectifier_power_l2": {
+        "name": "整流器電力 L2"
+      },
+      "grid_export_power_l1": {
+        "name": "系統輸出電力 L1"
+      },
+      "grid_export_power_l2": {
+        "name": "系統輸出電力 L2"
+      },
+      "grid_import_power_l1": {
+        "name": "系統輸入電力 L1"
+      },
+      "grid_import_power_l2": {
+        "name": "系統輸入電力 L2"
+      },
+      "generator_voltage_l1": {
+        "name": "発電機電圧 L1"
+      },
+      "generator_voltage_l2": {
+        "name": "発電機電圧 L2"
+      },
+      "power_output": {
+        "name": "出力電力"
+      },
+      "rectifier_power": {
+        "name": "整流器電力"
+      },
+      "ac_couple_power": {
+        "name": "AC連系電力"
+      },
+      "bus1_voltage": {
+        "name": "バス1電圧"
+      },
+      "bus2_voltage": {
+        "name": "バス2電圧"
+      },
+      "total_load_power": {
+        "name": "総負荷電力"
+      },
+      "smart_port1_status": {
+        "name": "スマートポート1ステータス",
+        "state": {
+          "unused": "未使用",
+          "smart_load": "スマートロード",
+          "ac_couple": "ACカップル"
+        }
+      },
+      "smart_port2_status": {
+        "name": "スマートポート2ステータス",
+        "state": {
+          "unused": "未使用",
+          "smart_load": "スマートロード",
+          "ac_couple": "ACカップル"
+        }
+      },
+      "smart_port3_status": {
+        "name": "スマートポート3ステータス",
+        "state": {
+          "unused": "未使用",
+          "smart_load": "スマートロード",
+          "ac_couple": "ACカップル"
+        }
+      },
+      "smart_port4_status": {
+        "name": "スマートポート4ステータス",
+        "state": {
+          "unused": "未使用",
+          "smart_load": "スマートロード",
+          "ac_couple": "ACカップル"
+        }
+      },
+      "battery_bank_charge_rate": {
+        "name": "バッテリーバンク充電率"
+      },
+      "battery_charge_rate": {
+        "name": "充電率"
+      },
+      "parallel_battery_charge_rate": {
+        "name": "バッテリー充電率"
+      }
+    },
+    "switch": {
+      "quick_charge": {
+        "name": "クイックチャージ"
+      },
+      "battery_backup_eps": {
+        "name": "バッテリーバックアップ（EPS）"
+      },
+      "off_grid_mode": {
+        "name": "オフグリッドモード"
+      }
+    },
+    "number": {
+      "system_charge_soc_limit": {
+        "name": "システム充電SOC制限"
+      },
+      "ac_charge_power": {
+        "name": "AC充電電力"
+      },
+      "pv_charge_power": {
+        "name": "PV充電電力"
+      },
+      "pv_start_voltage": {
+        "name": "PV開始電圧"
+      },
+      "ac_charge_soc_limit": {
+        "name": "AC充電SOC制限"
+      },
+      "soc_cutoff": {
+        "name": "SOCカットオフ"
+      }
+    },
+    "button": {
+      "refresh_data": {
+        "name": "データ更新"
+      }
+    },
+    "select": {
+      "operating_mode": {
+        "name": "動作モード",
+        "state": {
+          "normal": "通常",
+          "standby": "スタンバイ"
+        }
+      },
+      "pv_input_mode": {
+        "name": "PV入力モード",
+        "state": {
+          "no_pv": "NO PV",
+          "pv1": "PV1",
+          "pv2": "PV2",
+          "pv3": "PV3",
+          "pv1_pv2": "PV1 & PV2",
+          "pv1_pv3": "PV1 & PV3",
+          "pv2_pv3": "PV2 & PV3",
+          "pv1_pv2_pv3": "PV1 & PV2 & PV3"
+        }
+      }
+    }
+  },
+  "services": {
+    "refresh_data": {
+      "name": "データ更新",
+      "description": "通常のポーリング間隔をバイパスして、{brand_name} APIからデバイスデータの即時更新を強制します。",
+      "fields": {
+        "entry_id": {
+          "name": "設定エントリID",
+          "description": "更新する設定エントリID。指定しない場合、すべての{brand_name} Web Monitorインテグレーションが更新されます。"
+        }
+      }
+    },
+    "reconcile_history": {
+      "name": "エネルギー履歴の照合",
+      "description": "{brand_name}クラウドAPIから欠落しているエネルギー統計を補完します。このサービスは過去のエネルギーデータを取得し、エネルギーセンサー履歴のギャップに対してHome Assistantの統計データベースにインポートします。クラウド認証情報が必要です（HTTPまたはハイブリッド接続モード）。",
+      "fields": {
+        "lookback_hours": {
+          "name": "遡及時間数",
+          "description": "エネルギー統計のギャップを検索する時間数。デフォルトは48時間です。"
+        },
+        "start_date": {
+          "name": "開始日",
+          "description": "照合の明示的な開始日（YYYY-MM-DD形式）。指定した場合、end_dateも必要です。"
+        },
+        "end_date": {
+          "name": "終了日",
+          "description": "照合の明示的な終了日（YYYY-MM-DD形式）。指定した場合、start_dateも必要です。"
+        },
+        "entry_id": {
+          "name": "設定エントリID",
+          "description": "照合する設定エントリID。指定しない場合、クラウド認証情報を持つすべての{brand_name} Web Monitorインテグレーションが照合されます。"
+        }
+      }
+    }
+  },
+  "exceptions": {
+    "entry_not_found": {
+      "message": "設定エントリ {entry_id} が見つかりません。エントリIDが正しいことを確認してください。"
+    },
+    "entry_not_loaded": {
+      "message": "設定エントリ {entry_id} がロードされていません。インテグレーションが正しく設定され、実行されていることを確認してください。"
+    },
+    "no_coordinators": {
+      "message": "更新する{brand_name}コーディネーターが見つかりません。少なくとも1つの{brand_name} Web Monitorインテグレーションが設定されてロードされていることを確認してください。"
+    },
+    "invalid_date_format": {
+      "message": "日付形式が無効です。YYYY-MM-DD形式を使用してください。"
+    }
+  },
+  "issues": {
+    "dongle_validation_disabled": {
+      "title": "WiFi dongle のデータ検証を推奨",
+      "description": "WiFi dongle が設定されていますが、**データ検証**が無効になっています。WiFi dongle は Modbus バスを共有しており、同時読み取りによりレジスターデータが破損する可能性があります（例：エネルギースパイク）。\n\n修正するには、**設定 > デバイスとサービス > EG4 Web Monitor > 設定** に移動し、**データ検証**を有効にしてください。"
+    }
+  }
+}

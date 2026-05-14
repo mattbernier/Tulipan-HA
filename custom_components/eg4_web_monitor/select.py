@@ -1,0 +1,548 @@
+"""Select platform for EG4 Web Monitor integration."""
+
+import logging
+from typing import TYPE_CHECKING, Any
+
+from homeassistant.const import EntityCategory
+from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import HomeAssistantError
+from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from pylxpweb import OperatingMode
+
+if TYPE_CHECKING:
+    from homeassistant.components.select import SelectEntity
+    from homeassistant.helpers.update_coordinator import CoordinatorEntity
+else:
+    from homeassistant.components.select import SelectEntity  # type: ignore[assignment]
+    from homeassistant.helpers.update_coordinator import (
+        CoordinatorEntity,  # type: ignore[assignment]
+    )
+
+from . import EG4ConfigEntry
+from .const import (
+    DEVICE_TYPE_GRIDBOSS,
+    PARAM_HOLD_PV_INPUT_MODE,
+    SUPPORTED_INVERTER_MODELS,
+)
+from .coordinator import EG4DataUpdateCoordinator
+from .base_entity import _get_model_from_coordinator
+from .utils import (
+    create_device_info,
+    generate_entity_id,
+    generate_unique_id,
+)
+
+_LOGGER = logging.getLogger(__name__)
+
+
+def _get_model(
+    coordinator: EG4DataUpdateCoordinator, serial: str, default: str = "Unknown"
+) -> str:
+    """Get device model from coordinator, with custom default."""
+    model = _get_model_from_coordinator(coordinator, serial)
+    return model if model != "Unknown" else default
+
+
+# Silver tier requirement: Specify parallel update count
+MAX_PARALLEL_UPDATES = 2
+
+# Operating mode options
+OPERATING_MODE_OPTIONS = ["Normal", "Standby"]
+OPERATING_MODE_MAPPING = {
+    "Normal": True,  # True = normal mode (FUNC_SET_TO_STANDBY = true means Normal)
+    "Standby": False,  # False = standby mode (FUNC_SET_TO_STANDBY = false means Standby)
+}
+
+# PV Input Mode options (register 20, HOLD_PV_INPUT_MODE)
+# Maps display label -> raw register value
+PV_INPUT_MODE_OPTIONS = [
+    "NO PV",
+    "PV1",
+    "PV2",
+    "PV3",
+    "PV1 & PV2",
+    "PV1 & PV3",
+    "PV2 & PV3",
+    "PV1 & PV2 & PV3",
+]
+# Bidirectional mapping: label <-> register value
+PV_INPUT_MODE_TO_VALUE = {label: idx for idx, label in enumerate(PV_INPUT_MODE_OPTIONS)}
+PV_INPUT_VALUE_TO_MODE = {idx: label for idx, label in enumerate(PV_INPUT_MODE_OPTIONS)}
+
+# Smart Port mode options (GridBOSS holding register 20, bit-packed 2 bits per port)
+SMART_PORT_MODE_OPTIONS = ["Unused", "Smart Load", "AC Couple"]
+SMART_PORT_MODE_TO_VALUE = {
+    label: idx for idx, label in enumerate(SMART_PORT_MODE_OPTIONS)
+}
+# Sensor status labels → select display labels
+_STATUS_TO_SELECT = {
+    "unused": "Unused",
+    "smart_load": "Smart Load",
+    "ac_couple": "AC Couple",
+}
+
+
+async def async_setup_entry(
+    hass: HomeAssistant,
+    entry: EG4ConfigEntry,
+    async_add_entities: AddEntitiesCallback,
+) -> None:
+    """Set up EG4 Web Monitor select entities."""
+    coordinator: EG4DataUpdateCoordinator = entry.runtime_data
+
+    entities: list[SelectEntity] = []
+
+    if not coordinator.data or "devices" not in coordinator.data:
+        _LOGGER.warning("No device data available for select setup")
+        return
+
+    # Create select entities for compatible devices
+    for serial, device_data in coordinator.data["devices"].items():
+        device_type = device_data.get("type", "unknown")
+        _LOGGER.debug("Processing device %s with type: %s", serial, device_type)
+
+        # Only create selects for standard inverters (not GridBOSS)
+        if device_type == "inverter":
+            # Get device model for compatibility check
+            model = device_data.get("model", "Unknown")
+            model_lower = model.lower()
+
+            _LOGGER.debug(
+                "Evaluating select compatibility: device=%s, model=%s",
+                serial,
+                model,
+            )
+
+            if any(supported in model_lower for supported in SUPPORTED_INVERTER_MODELS):
+                # Add operating mode select
+                entities.append(
+                    EG4OperatingModeSelect(coordinator, serial, device_data)
+                )
+                # Add PV input mode select
+                entities.append(EG4PVInputModeSelect(coordinator, serial, device_data))
+                _LOGGER.debug(
+                    "Added operating mode + PV input mode selects for device %s (%s)",
+                    serial,
+                    model,
+                )
+            else:
+                _LOGGER.debug(
+                    "Skipping select for device %s (%s) - unsupported model",
+                    serial,
+                    model,
+                )
+        elif device_type == DEVICE_TYPE_GRIDBOSS:
+            for port in range(1, 5):
+                entities.append(
+                    EG4SmartPortModeSelect(coordinator, serial, device_data, port)
+                )
+            _LOGGER.debug("Added 4 smart port mode selects for GridBOSS %s", serial)
+        else:
+            _LOGGER.debug(
+                "Skipping device %s - not an inverter or GridBOSS (type: %s)",
+                serial,
+                device_type,
+            )
+
+    if entities:
+        _LOGGER.info("Setup complete: %d select entities created", len(entities))
+        async_add_entities(entities)
+    else:
+        _LOGGER.debug("No select entities created - no compatible devices found")
+
+
+class EG4OperatingModeSelect(CoordinatorEntity, SelectEntity):
+    """Select to control operating mode (Normal/Standby)."""
+
+    def __init__(
+        self,
+        coordinator: EG4DataUpdateCoordinator,
+        serial: str,
+        device_data: dict[str, Any],
+    ) -> None:
+        """Initialize the operating mode select."""
+        super().__init__(coordinator)
+        self.coordinator: EG4DataUpdateCoordinator = coordinator
+
+        self._serial = serial
+
+        # Optimistic state for immediate UI feedback
+        self._optimistic_state: str | None = None
+
+        # Get device model using shared utility
+        self._model = _get_model(coordinator, serial)
+
+        # Create unique identifiers using consolidated utilities
+        self._attr_unique_id = generate_unique_id(serial, "operating_mode")
+        self._attr_entity_id = generate_entity_id(
+            "select", self._model, serial, "operating_mode"
+        )
+
+        # Set device attributes
+        # Modern entity naming - let Home Assistant combine device name + entity name
+        self._attr_has_entity_name = True
+        self._attr_name = "Operating Mode"
+        self._attr_icon = "mdi:power-settings"
+        self._attr_options = OPERATING_MODE_OPTIONS
+
+        # Device info for grouping using consolidated utility
+        self._attr_device_info = create_device_info(serial, self._model)
+
+    @property
+    def current_option(self) -> str | None:
+        """Return the current operating mode."""
+        # Use optimistic state if available (for immediate UI feedback)
+        if self._optimistic_state is not None:
+            return self._optimistic_state
+
+        # Try to get the current mode from coordinator data
+        # Based on user clarification: FUNC_SET_TO_STANDBY parameter mapping:
+        # - true = Normal mode
+        # - false = Standby mode
+        if self.coordinator.data and "parameters" in self.coordinator.data:
+            device_params = self.coordinator.data["parameters"].get(self._serial, {})
+            standby_status = device_params.get("FUNC_SET_TO_STANDBY")
+            if standby_status is not None:
+                # FUNC_SET_TO_STANDBY true = Normal, false = Standby
+                return "Normal" if standby_status else "Standby"
+
+        # Default to Normal if we don't have status information
+        return "Normal"
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any] | None:
+        """Return extra state attributes."""
+        attributes = {}
+
+        # Add device serial for reference
+        attributes["device_serial"] = self._serial
+
+        # Add optimistic state indicator for debugging
+        if self._optimistic_state is not None:
+            attributes["optimistic_state"] = self._optimistic_state
+
+        # Add any relevant parameter information if available
+        if self.coordinator.data and "parameters" in self.coordinator.data:
+            device_params = self.coordinator.data["parameters"].get(self._serial, {})
+            standby_status = device_params.get("FUNC_SET_TO_STANDBY")
+            if standby_status is not None:
+                attributes["standby_parameter"] = standby_status
+
+        return attributes if attributes else None
+
+    @property
+    def available(self) -> bool:
+        """Return if entity is available."""
+        # Check if the device supports operating mode control
+        if self.coordinator.data and "devices" in self.coordinator.data:
+            device_data = self.coordinator.data["devices"].get(self._serial, {})
+            # Only available for inverter devices (not GridBOSS)
+            return bool(device_data.get("type") == "inverter")
+        return False
+
+    async def async_select_option(self, option: str) -> None:
+        """Change the operating mode using device object method."""
+        if option not in OPERATING_MODE_OPTIONS:
+            _LOGGER.error("Invalid operating mode option: %s", option)
+            return
+
+        try:
+            _LOGGER.debug(
+                "Setting operating mode to %s for device %s", option, self._serial
+            )
+
+            # Set optimistic state immediately for UI responsiveness
+            self._optimistic_state = option
+            self.async_write_ha_state()
+
+            # Get inverter device object
+            inverter = self.coordinator.get_inverter_object(self._serial)
+            if not inverter:
+                raise HomeAssistantError(f"Inverter {self._serial} not found")
+
+            # Use device object convenience method
+            # Convert string to OperatingMode enum
+            mode_value = OperatingMode[
+                option.upper()
+            ]  # "Normal" -> NORMAL, "Standby" -> STANDBY
+            success = await inverter.set_operating_mode(mode_value)
+            if not success:
+                raise HomeAssistantError(f"Failed to set operating mode to {option}")
+
+            _LOGGER.info(
+                "Successfully set operating mode to %s for device %s",
+                option,
+                self._serial,
+            )
+
+            # Refresh inverter data
+            await inverter.refresh()
+
+            # Clear optimistic state and request coordinator parameter refresh
+            self._optimistic_state = None
+            await self.coordinator.async_refresh_device_parameters(self._serial)
+
+        except Exception as e:
+            _LOGGER.error(
+                "Failed to set operating mode to %s for device %s: %s",
+                option,
+                self._serial,
+                e,
+            )
+            # Revert optimistic state on error
+            self._optimistic_state = None
+            self.async_write_ha_state()
+            raise
+
+
+class EG4PVInputModeSelect(CoordinatorEntity, SelectEntity):
+    """Select to control PV Input Mode (which MPPT channels are active).
+
+    Controls holding register 20 (HOLD_PV_INPUT_MODE), values 0-7.
+    Model-dependent — not all inverters have 3 MPPT channels.
+    Supports both local Modbus and cloud API write paths.
+    """
+
+    def __init__(
+        self,
+        coordinator: EG4DataUpdateCoordinator,
+        serial: str,
+        device_data: dict[str, Any],
+    ) -> None:
+        """Initialize the PV input mode select."""
+        super().__init__(coordinator)
+        self.coordinator: EG4DataUpdateCoordinator = coordinator
+
+        self._serial = serial
+
+        # Optimistic state for immediate UI feedback
+        self._optimistic_state: str | None = None
+
+        # Get device model using shared utility
+        self._model = _get_model(coordinator, serial)
+
+        # Create unique identifiers using consolidated utilities
+        self._attr_unique_id = generate_unique_id(serial, "pv_input_mode")
+        self._attr_entity_id = generate_entity_id(
+            "select", self._model, serial, "pv_input_mode"
+        )
+
+        # Set device attributes
+        self._attr_has_entity_name = True
+        self._attr_name = "PV Input Mode"
+        self._attr_entity_category = EntityCategory.CONFIG
+        self._attr_icon = "mdi:solar-panel"
+        self._attr_options = PV_INPUT_MODE_OPTIONS
+
+        # Device info for grouping using consolidated utility
+        self._attr_device_info = create_device_info(serial, self._model)
+
+    @property
+    def current_option(self) -> str | None:
+        """Return the current PV input mode."""
+        if self._optimistic_state is not None:
+            return self._optimistic_state
+
+        if self.coordinator.data and "parameters" in self.coordinator.data:
+            device_params = self.coordinator.data["parameters"].get(self._serial, {})
+            mode_value = device_params.get(PARAM_HOLD_PV_INPUT_MODE)
+            if mode_value is not None:
+                return PV_INPUT_VALUE_TO_MODE.get(int(mode_value))
+
+        return None
+
+    @property
+    def available(self) -> bool:
+        """Return if entity is available."""
+        if self.coordinator.data and "devices" in self.coordinator.data:
+            device_data = self.coordinator.data["devices"].get(self._serial, {})
+            return bool(device_data.get("type") == "inverter")
+        return False
+
+    async def async_select_option(self, option: str) -> None:
+        """Change the PV input mode via local Modbus or cloud API."""
+        if option not in PV_INPUT_MODE_TO_VALUE:
+            raise HomeAssistantError(f"Invalid PV input mode: {option}")
+
+        int_value = PV_INPUT_MODE_TO_VALUE[option]
+
+        try:
+            _LOGGER.info(
+                "Setting PV input mode to %s (%d) for device %s",
+                option,
+                int_value,
+                self._serial,
+            )
+
+            # Set optimistic state immediately for UI responsiveness
+            self._optimistic_state = option
+            self.async_write_ha_state()
+
+            if self.coordinator.has_local_transport(self._serial):
+                # Local Modbus: write register value directly
+                await self.coordinator.write_named_parameter(
+                    PARAM_HOLD_PV_INPUT_MODE, int_value, serial=self._serial
+                )
+            elif self.coordinator.client is not None:
+                # Cloud API: write via generic parameter write
+                result = await self.coordinator.client.api.control.write_parameter(
+                    self._serial, "HOLD_PV_INPUT_MODE", str(int_value)
+                )
+                if not result.success:
+                    raise HomeAssistantError(f"Failed to set PV input mode to {option}")
+                inverter = self.coordinator.get_inverter_object(self._serial)
+                if inverter:
+                    await inverter.refresh(force=True, include_parameters=True)
+            else:
+                raise HomeAssistantError(
+                    "No local transport or cloud API available for parameter write."
+                )
+
+            _LOGGER.info(
+                "Successfully set PV input mode to %s for device %s",
+                option,
+                self._serial,
+            )
+
+            # Clear optimistic state and refresh parameters
+            self._optimistic_state = None
+            await self.coordinator.async_refresh_device_parameters(self._serial)
+
+        except Exception as e:
+            _LOGGER.error(
+                "Failed to set PV input mode to %s for device %s: %s",
+                option,
+                self._serial,
+                e,
+            )
+            # Revert optimistic state on error
+            self._optimistic_state = None
+            self.async_write_ha_state()
+            raise
+
+
+class EG4SmartPortModeSelect(CoordinatorEntity, SelectEntity):
+    """Select to control GridBOSS smart port mode (Off/Smart Load/AC Couple).
+
+    Controls holding register 20 (bit-packed, 2 bits per port).
+    Supports both local Modbus and cloud API write paths.
+    """
+
+    def __init__(
+        self,
+        coordinator: EG4DataUpdateCoordinator,
+        serial: str,
+        device_data: dict[str, Any],
+        port: int,
+    ) -> None:
+        """Initialize the smart port mode select."""
+        super().__init__(coordinator)
+        self.coordinator: EG4DataUpdateCoordinator = coordinator
+
+        self._serial = serial
+        self._port = port
+
+        # Optimistic state for immediate UI feedback
+        self._optimistic_state: str | None = None
+
+        # Get device model using shared utility
+        self._model = _get_model(coordinator, serial, default="GridBOSS")
+
+        self._attr_unique_id = generate_unique_id(serial, f"smart_port{port}_mode")
+        self._attr_entity_id = generate_entity_id(
+            "select", self._model, serial, f"smart_port_{port}_mode"
+        )
+
+        self._attr_has_entity_name = True
+        self._attr_name = f"Smart Port {port} Mode"
+        self._attr_entity_category = EntityCategory.CONFIG
+        self._attr_icon = "mdi:electric-switch"
+        self._attr_options = SMART_PORT_MODE_OPTIONS
+
+        self._attr_device_info = create_device_info(serial, self._model)
+
+    @property
+    def current_option(self) -> str | None:
+        """Return the current smart port mode."""
+        if self._optimistic_state is not None:
+            return self._optimistic_state
+
+        if self.coordinator.data and "devices" in self.coordinator.data:
+            sensors = (
+                self.coordinator.data["devices"]
+                .get(self._serial, {})
+                .get("sensors", {})
+            )
+            status_label = sensors.get(f"smart_port{self._port}_status")
+            if status_label is not None:
+                return _STATUS_TO_SELECT.get(str(status_label))
+
+        return None
+
+    @property
+    def available(self) -> bool:
+        """Return if entity is available."""
+        if self.coordinator.data and "devices" in self.coordinator.data:
+            device_data = self.coordinator.data["devices"].get(self._serial, {})
+            return bool(device_data.get("type") == DEVICE_TYPE_GRIDBOSS)
+        return False
+
+    async def async_select_option(self, option: str) -> None:
+        """Change the smart port mode via local Modbus or cloud API."""
+        if option not in SMART_PORT_MODE_TO_VALUE:
+            raise HomeAssistantError(f"Invalid smart port mode: {option}")
+
+        int_value = SMART_PORT_MODE_TO_VALUE[option]
+
+        try:
+            _LOGGER.info(
+                "Setting smart port %d mode to %s (%d) for device %s",
+                self._port,
+                option,
+                int_value,
+                self._serial,
+            )
+
+            self._optimistic_state = option
+            self.async_write_ha_state()
+
+            if self.coordinator.has_local_transport(self._serial):
+                await self.coordinator.write_named_parameter(
+                    f"BIT_MIDBOX_SP_MODE_{self._port}",
+                    int_value,
+                    serial=self._serial,
+                )
+            elif self.coordinator.client is not None:
+                result = await self.coordinator.client.api.control.set_smart_port_mode(
+                    self._serial, self._port, int_value
+                )
+                if not result.success:
+                    raise HomeAssistantError(
+                        f"Failed to set smart port {self._port} mode to {option}"
+                    )
+            else:
+                raise HomeAssistantError(
+                    "No local transport or cloud API available for parameter write."
+                )
+
+            _LOGGER.info(
+                "Successfully set smart port %d mode to %s for device %s",
+                self._port,
+                option,
+                self._serial,
+            )
+
+            self._optimistic_state = None
+            await self.coordinator.async_request_refresh()
+
+        except Exception as e:
+            _LOGGER.error(
+                "Failed to set smart port %d mode to %s for device %s: %s",
+                self._port,
+                option,
+                self._serial,
+                e,
+            )
+            self._optimistic_state = None
+            self.async_write_ha_state()
+            raise

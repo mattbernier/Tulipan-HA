@@ -22,6 +22,9 @@ deps/
 # TTS generated audio
 tts/
 
+# Claude Code
+.claude/
+
 # Zigbee2MQTT runtime data
 zigbee2mqtt/database.db
 zigbee2mqtt/database.db.backup
