@@ -25,6 +25,11 @@ tts/
 # Claude Code
 .claude/
 
+# Python bytecode
+__pycache__/
+*.pyc
+*.pyo
+
 # Zigbee2MQTT runtime data
 zigbee2mqtt/database.db
 zigbee2mqtt/database.db.backup
