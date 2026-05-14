@@ -1,0 +1,123 @@
+terrace_lights_script:
+  sequence:
+  - action: light.toggle
+    metadata: {}
+    target:
+      entity_id:
+      - light.terrace_lights_group
+    data:
+      brightness_pct: 50
+  alias: Toggle Terrace Lights
+  description: ''
+terrace_lights_brightness_100:
+  sequence:
+  - action: light.turn_on
+    metadata: {}
+    target:
+      entity_id:
+      - light.terrace_lights_group
+    data:
+      brightness_pct: 100
+  alias: 'Terrace Lights brightness 100% '
+  description: ''
+terrace_lights_brightness_50:
+  sequence:
+  - action: light.turn_on
+    metadata: {}
+    target:
+      entity_id:
+      - light.terrace_lights_group
+    data:
+      brightness_pct: 50
+  alias: Terrace Lights brightness 50%
+  description: ''
+terrace_lights_brightness_25:
+  sequence:
+  - action: light.turn_on
+    metadata: {}
+    target:
+      entity_id:
+      - light.terrace_lights_group
+    data:
+      brightness_pct: 25
+  alias: Terrace Lights brightness 25%
+  description: ''
+increase_brightness_10:
+  sequence:
+  - action: light.turn_on
+    metadata: {}
+    target:
+      entity_id:
+      - light.terrace_lights_group
+    data:
+      brightness_step_pct: 10
+  alias: Increase Brightness 10%
+  description: ''
+decrease_brightness_10:
+  sequence:
+  - action: light.turn_on
+    metadata: {}
+    target:
+      entity_id:
+      - light.terrace_lights_group
+    data:
+      brightness_step_pct: -10
+  alias: Decrease Brightness 10%
+  description: ''
+sonos_speak_typed_message:
+  alias: Sonos - Speak Typed Message
+  mode: single
+  fields:
+    target_sonos:
+      name: Target Sonos
+      description: Sonos media_player entity to speak on
+      required: true
+      selector:
+        entity:
+          domain: media_player
+      default: media_player.unnamed_room_2
+    message:
+      name: Message (optional)
+      description: Override the helper text
+      required: false
+      selector:
+        text:
+    volume:
+      name: Volume (optional)
+      description: Temporary volume (0.0 to 1.0)
+      required: false
+      selector:
+        number:
+          min: 0
+          max: 1
+          step: 0.05
+  sequence:
+  - data:
+      entity_id: media_player.unnamed_room_2
+    action: sonos.snapshot
+  - target:
+      entity_id: media_player.unnamed_room_2
+    data:
+      volume_level: 0.31
+    action: media_player.volume_set
+  - data:
+      media_player_entity_id: media_player.unnamed_room_2
+      message: '{{ states(''input_text.sonos_announcement'') }}'
+    action: tts.speak
+    target:
+      entity_id: tts.home_assistant_cloud
+  - delay: 00:00:03
+  - data:
+      entity_id: media_player.unnamed_room_2
+    action: sonos.restore
+  description: ''
+change_cabinet_lighting_to_steel_blue:
+  sequence:
+  - action: automation.trigger
+    metadata: {}
+    target:
+      entity_id: automation.change_under_cabinet_lighting_to_blue_at_8_00_pm
+    data:
+      skip_condition: true
+  alias: Change Cabinet Lighting to Steel Blue
+  description: ''

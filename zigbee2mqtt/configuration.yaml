@@ -1,0 +1,50 @@
+version: 5
+mqtt:
+  base_topic: zigbee2mqtt
+  server: mqtt://core-mosquitto:1883
+  user: addons
+  password: fae7Xotiekade5aicheiwaifaidaeHeem6ierae1oota4dasa1Zo9iesh8ohrula
+advanced:
+  transmit_power: 20
+  log_level: info
+  channel: 11
+  network_key:
+    - 58
+    - 173
+    - 49
+    - 245
+    - 144
+    - 9
+    - 55
+    - 106
+    - 75
+    - 64
+    - 246
+    - 177
+    - 204
+    - 24
+    - 146
+    - 57
+  pan_id: 14902
+  ext_pan_id:
+    - 173
+    - 166
+    - 33
+    - 144
+    - 74
+    - 103
+    - 125
+    - 81
+frontend:
+  enabled: true
+  port: 8099
+homeassistant:
+  enabled: true
+serial:
+  port: tcp://192.168.4.118:6638
+  baudrate: 115200
+  adapter: zstack
+  disable_led: false
+devices:
+  '0x54ef4410014f4197':
+    friendly_name: Aqara Cube

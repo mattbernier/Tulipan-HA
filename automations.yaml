@@ -1,0 +1,941 @@
+- id: '1771331434793'
+  alias: Send notification when Washing Machine is complete
+  description: ''
+  triggers:
+  - type: turned_on
+    device_id: a744694b0399bc07cef5db6f8c75de1f
+    entity_id: 3c45f38e4517ac6138226e2ea7e31862
+    domain: binary_sensor
+    metadata:
+      secondary: false
+    trigger: device
+  conditions: []
+  actions:
+  - action: notify.mobile_app_matts_iphone
+    metadata: {}
+    data:
+      message: Clothes are clean
+      title: Tulipan Laundry
+  mode: single
+- id: '1771331593275'
+  alias: Send notification when Clothes Dryer is complete
+  description: ''
+  triggers:
+  - type: turned_on
+    device_id: 72081fac047d17a4ebdd35676d399a80
+    entity_id: e9e16156509b07a8932ed52de72ffab3
+    domain: binary_sensor
+    metadata:
+      secondary: false
+    trigger: device
+  conditions: []
+  actions:
+  - action: notify.mobile_app_matts_iphone
+    metadata: {}
+    data:
+      message: Clothes are dry
+      title: Tulipan Laundry
+  mode: single
+- id: '1771807269923'
+  alias: Turn lights on at Sunset
+  description: ''
+  triggers:
+  - trigger: sun
+    event: sunset
+    offset: 0
+  conditions: []
+  actions:
+  - type: turn_on
+    device_id: 433c1f923618ee81451308f603d768cb
+    entity_id: 76a859f4b67656f0d0c759a590dabc26
+    domain: switch
+  - type: turn_on
+    device_id: a01f9ccef04c2e15cbc6ba3290d8c415
+    entity_id: 2a0244dcc07e2b0a9e038b2c754cc1a1
+    domain: switch
+  - action: script.turn_on
+    metadata: {}
+    target:
+      entity_id: script.terrace_lights_brightness_50
+    data: {}
+  - action: light.turn_on
+    metadata: {}
+    data:
+      color_temp_kelvin: 6500
+      brightness_pct: 100
+    target:
+      entity_id: light.kitchen_under_cabinet_lights
+  - action: switch.toggle
+    metadata: {}
+    data: {}
+    target:
+      device_id: 8497c6a4d830064e31e6b781c639b44c
+  mode: single
+- id: '1771808014045'
+  alias: Turn lights off at 10:00pm
+  description: ''
+  triggers:
+  - trigger: time
+    at: '22:00:00'
+    weekday:
+    - mon
+    - sun
+    - tue
+    - wed
+    - thu
+    - fri
+    - sat
+  conditions: []
+  actions:
+  - type: turn_off
+    device_id: a01f9ccef04c2e15cbc6ba3290d8c415
+    entity_id: 2a0244dcc07e2b0a9e038b2c754cc1a1
+    domain: switch
+  - action: light.turn_off
+    metadata: {}
+    target:
+      entity_id:
+      - light.terrace_lights_group
+    data: {}
+  mode: single
+- id: '1771808093111'
+  alias: Turn Front lights off at 11:00 pm
+  description: ''
+  triggers:
+  - trigger: time
+    at: '23:00:00'
+    weekday:
+    - mon
+    - sun
+    - tue
+    - wed
+    - thu
+    - fri
+    - sat
+  conditions: []
+  actions:
+  - type: turn_off
+    device_id: 433c1f923618ee81451308f603d768cb
+    entity_id: 76a859f4b67656f0d0c759a590dabc26
+    domain: switch
+  - action: switch.toggle
+    metadata: {}
+    data: {}
+    target:
+      device_id: 8497c6a4d830064e31e6b781c639b44c
+  mode: single
+- id: '1771867903390'
+  alias: Send notification if Oven is left on when no one is home
+  description: ''
+  triggers:
+  - device_id: 833bf33505f558b8925c0550bf9c407a
+    domain: device_tracker
+    entity_id: 199be3a857dd8ca315b582c29ea1f3c1
+    type: leaves
+    trigger: device
+    zone: zone.home
+  conditions:
+  - condition: state
+    entity_id: binary_sensor.snla052002q_cooktop_status
+    state:
+    - 'on'
+  actions:
+  - action: notify.mobile_app_matts_iphone
+    metadata: {}
+    data:
+      message: Oven was left on
+      title: Tulipan Oven
+  mode: single
+- id: '1771981543611'
+  alias: Turn Family Room Lamp On
+  description: ''
+  triggers:
+  - device_id: 8d754753757a9e93f7f91a23ce9524dc
+    domain: lutron_caseta
+    type: press
+    subtype: 'on'
+    trigger: device
+  conditions: []
+  actions:
+  - action: light.turn_on
+    metadata: {}
+    target:
+      entity_id: light.h6076
+    data: {}
+  mode: single
+- id: '1771981594120'
+  alias: Turn Family Room Lamp Off
+  description: ''
+  triggers:
+  - device_id: 8d754753757a9e93f7f91a23ce9524dc
+    domain: lutron_caseta
+    type: press
+    subtype: 'off'
+    trigger: device
+  conditions: []
+  actions:
+  - action: light.turn_off
+    metadata: {}
+    target:
+      entity_id: light.h6076
+    data: {}
+  mode: single
+- id: '1772066186067'
+  alias: Toggle Terrace Fan Lights
+  description: ''
+  triggers:
+  - device_id: 8d754753757a9e93f7f91a23ce9524dc
+    domain: lutron_caseta
+    type: press
+    subtype: raise
+    trigger: device
+  conditions: []
+  actions:
+  - action: light.toggle
+    metadata: {}
+    target:
+      entity_id: light.terrace_fan_lights
+    data:
+      brightness_pct: 100
+  mode: single
+- id: '1772066259107'
+  alias: Toggle Terrace Fans
+  description: ''
+  triggers:
+  - device_id: 8d754753757a9e93f7f91a23ce9524dc
+    domain: lutron_caseta
+    type: press
+    subtype: lower
+    trigger: device
+  conditions: []
+  actions:
+  - action: fan.toggle
+    metadata: {}
+    target:
+      entity_id: fan.terrace_fans
+    data: {}
+  mode: single
+- id: '1774570710280'
+  alias: Turn On Master Bedroom Ceiling Fan Light with Pico Remote
+  description: ''
+  triggers:
+  - device_id: 5b716f81de9b86ad27df7c0af8d7ea86
+    domain: lutron_caseta
+    type: press
+    subtype: 'on'
+    trigger: device
+  - device_id: aceb8f550f163a808f0c8af0ceeb6a67
+    domain: lutron_caseta
+    type: press
+    subtype: 'on'
+    trigger: device
+  conditions: []
+  actions:
+  - action: light.turn_on
+    metadata: {}
+    target:
+      entity_id: light.master_bedroom_ceiling_fan
+    data: {}
+  mode: single
+- id: '1774570820973'
+  alias: Turn Off Master Bedroom Ceiling Fan Light with Pico Remote
+  description: ''
+  triggers:
+  - device_id: 5b716f81de9b86ad27df7c0af8d7ea86
+    domain: lutron_caseta
+    type: press
+    subtype: 'off'
+    trigger: device
+  - device_id: aceb8f550f163a808f0c8af0ceeb6a67
+    domain: lutron_caseta
+    type: press
+    subtype: 'off'
+    trigger: device
+  conditions: []
+  actions:
+  - action: light.turn_off
+    metadata: {}
+    target:
+      device_id: a056b321eefe42d15a3cd5dac3579679
+    data: {}
+  mode: single
+- id: '1774571362567'
+  alias: Turn on Master Bedroom Ceiling Fan Light and Sconce
+  description: ''
+  triggers:
+  - device_id: 57671fc7ec53dfcc9c1c63a59f69438b
+    domain: lutron_caseta
+    type: press
+    subtype: 'on'
+    metadata: {}
+    trigger: device
+  conditions: []
+  actions:
+  - action: light.turn_on
+    metadata: {}
+    target:
+      entity_id: light.master_bedroom_ceiling_fan
+    data: {}
+  mode: single
+- id: '1774571552348'
+  alias: Turn off Master Bedroom Ceiling Fan Light and Sconce
+  description: ''
+  triggers:
+  - device_id: 57671fc7ec53dfcc9c1c63a59f69438b
+    domain: lutron_caseta
+    type: press
+    subtype: 'off'
+    trigger: device
+  conditions: []
+  actions:
+  - action: light.turn_off
+    metadata: {}
+    target:
+      entity_id: light.master_bedroom_ceiling_fan
+    data: {}
+  mode: single
+- id: '1774661047544'
+  alias: Zooz Terrace Scene 002 Single Button Press Terrace Fans Toggle
+  description: ''
+  triggers:
+  - device_id: 7fc0920a7192e5f175bf99988694b5a3
+    domain: zwave_js
+    type: event.value_notification.central_scene
+    property: scene
+    property_key: '002'
+    endpoint: 0
+    command_class: 91
+    subtype: Endpoint 0 Scene 002
+    trigger: device
+  conditions: []
+  actions:
+  - action: fan.toggle
+    metadata: {}
+    target:
+      entity_id: fan.terrace_fans
+    data: {}
+  mode: single
+- id: '1774661953330'
+  alias: Zooz Terrace Scene 001 Single Button Press Terrace Fan Lights Toggle
+  description: ''
+  triggers:
+  - device_id: 7fc0920a7192e5f175bf99988694b5a3
+    domain: zwave_js
+    type: event.value_notification.central_scene
+    property: scene
+    property_key: '001'
+    endpoint: 0
+    command_class: 91
+    subtype: Endpoint 0 Scene 001
+    trigger: device
+  conditions: []
+  actions:
+  - action: light.toggle
+    metadata: {}
+    target:
+      entity_id: light.terrace_fan_lights
+    data:
+      brightness_pct: 100
+  mode: single
+- id: '1774663336102'
+  alias: Zooz Terrace Scene 004 Single Button Press Good Night
+  description: ''
+  triggers:
+  - device_id: 7fc0920a7192e5f175bf99988694b5a3
+    domain: zwave_js
+    type: event.value_notification.central_scene
+    property: scene
+    property_key: '004'
+    endpoint: 0
+    command_class: 91
+    subtype: Endpoint 0 Scene 004
+    trigger: device
+  - device_id: 406f40b62881310e461a92cad18a011c
+    domain: zwave_js
+    type: event.value_notification.central_scene
+    property: scene
+    property_key: '004'
+    endpoint: 0
+    command_class: 91
+    subtype: Endpoint 0 Scene 004
+    trigger: device
+  conditions: []
+  actions:
+  - type: turn_on
+    device_id: 2512da8e407188a2f22e206cc0dd3474
+    entity_id: 3e4d500496805f0ef078b1abba58839b
+    domain: switch
+  - action: light.turn_off
+    metadata: {}
+    target:
+      device_id:
+      - 61ba51b34bb20fa15fbd2ecb721a3ca7
+      - f0e8bb20ebead74db406abafa3542ba8
+      - fb6e0f3ea096f956d898a2feeae4fbe2
+      - 9d6677dae182f3256213a772c53a849d
+      - 1dbd7211cd51600862083712c102affc
+      - 4e331ec2ccbfbfe3d8cbd0019c944da2
+      - 8e58231024efd83f9b309744573bca2a
+      entity_id:
+      - light.terrace_fan_lights
+      - light.tulipan_pool_bar_2
+      - light.terrace_lights_group
+      - light.living_room_main_lights
+      - light.living_room_led_lighting
+      - light.1st_floor_bathroom_vanity_lights
+      - light.kitchen_under_cabinet_lights
+    data: {}
+  - action: fan.turn_off
+    metadata: {}
+    target:
+      entity_id:
+      - fan.terrace_fans
+      - fan.tulipan_pool_bar_fan
+    data: {}
+  - type: turn_off
+    device_id: 8e2c5cc821624999cf79ba86fd775f08
+    entity_id: 801ca7179e9b50b00c28a51a2ce09290
+    domain: switch
+  - type: turn_off
+    device_id: 589a2f8290228f0abdd378d1ddf968fa
+    entity_id: 0a03290aa59ae8d0644527b53ec9e9da
+    domain: switch
+  - type: turn_off
+    device_id: 63a82708cfa92a26f225c525ca30665e
+    entity_id: cd10f725de10826edafd3c2974b7160d
+    domain: switch
+  - type: turn_off
+    device_id: a01f9ccef04c2e15cbc6ba3290d8c415
+    entity_id: 2a0244dcc07e2b0a9e038b2c754cc1a1
+    domain: switch
+  - action: media_player.turn_off
+    metadata: {}
+    target:
+      entity_id: media_player.family_room_tv
+    data: {}
+  - type: turn_off
+    device_id: 4e331ec2ccbfbfe3d8cbd0019c944da2
+    entity_id: 6d2f5cc48b826116c51afcf3c131a119
+    domain: light
+  - action: switch.turn_off
+    metadata: {}
+    target:
+      entity_id:
+      - switch.right_terrace_switch_switch_1
+      - switch.left_terrace_switch_switch_1
+    data: {}
+  - action: climate.set_temperature
+    metadata: {}
+    target:
+      entity_id:
+      - climate.150633095227811_climate
+      - climate.150633095147232_climate
+    data:
+      temperature: 74
+  mode: single
+- id: '1774728482921'
+  alias: Zooz Master Bedroom Scene 002 Single Button Press Bedroom Lights On
+  description: ''
+  triggers:
+  - device_id: 406f40b62881310e461a92cad18a011c
+    domain: zwave_js
+    type: event.value_notification.central_scene
+    property: scene
+    property_key: '002'
+    endpoint: 0
+    command_class: 91
+    subtype: Endpoint 0 Scene 002
+    trigger: device
+  conditions: []
+  actions:
+  - action: light.toggle
+    metadata: {}
+    target:
+      entity_id: light.master_bedroom_ceiling_fan
+    data: {}
+  - type: toggle
+    device_id: 5a1069359cb224117c4554d694e2f2a3
+    entity_id: 01af5d2b7d8b7b209e9f335c2d5e25f3
+    domain: switch
+  mode: single
+- id: '1774998135799'
+  alias: Zooz Master Bedroom Scene 003 Single Button Press Terrace Light Toggle
+  description: ''
+  triggers:
+  - device_id: 406f40b62881310e461a92cad18a011c
+    domain: zwave_js
+    type: event.value_notification.central_scene
+    property: scene
+    property_key: '003'
+    endpoint: 0
+    command_class: 91
+    subtype: Endpoint 0 Scene 003
+    trigger: device
+  conditions: []
+  actions:
+  - type: toggle
+    device_id: fdf769136682c5839eb3a21182381b7b
+    entity_id: 85998154bf08962379742f6c06754238
+    domain: switch
+  mode: single
+- id: '1774998344699'
+  alias: Zooz Master Bedroom Scene 001 Single Button Press Bedroom Lamps Toggle
+  description: ''
+  triggers:
+  - device_id: 406f40b62881310e461a92cad18a011c
+    domain: zwave_js
+    type: event.value_notification.central_scene
+    property: scene
+    property_key: '001'
+    endpoint: 0
+    command_class: 91
+    subtype: Endpoint 0 Scene 001
+    trigger: device
+  conditions: []
+  actions:
+  - type: toggle
+    device_id: fdc7e6439d580910ea262848e7a0d47a
+    entity_id: 55765906cdd7a3b31d566ec5d678e580
+    domain: light
+  - type: toggle
+    device_id: 3768eccdd41e041b70ed694c0bc95364
+    entity_id: 89cefd32bf8344213575eb16b6857b35
+    domain: light
+  mode: single
+- id: '1774999044081'
+  alias: Zooz Master Bedroom Scene 001 Double Button Press Bedroom Lamps Increase
+    Brightness
+  description: ''
+  triggers:
+  - device_id: 406f40b62881310e461a92cad18a011c
+    domain: zwave_js
+    type: event.value_notification.central_scene
+    property: scene
+    property_key: '001'
+    endpoint: 0
+    command_class: 91
+    subtype: Endpoint 0 Scene 001
+    trigger: device
+    value: 2
+  conditions: []
+  actions:
+  - action: light.turn_on
+    metadata: {}
+    target:
+      entity_id:
+      - light.master_bedroom_kamis_lamp
+      - light.master_bedroom_matts_lamp
+    data:
+      brightness_step_pct: 10
+  mode: single
+- id: '1774999292606'
+  alias: Zooz Master Bedroom Scene 001 Triple Button Press Bedroom Lamps Decrease
+    Brightness
+  description: ''
+  triggers:
+  - device_id: 406f40b62881310e461a92cad18a011c
+    domain: zwave_js
+    type: event.value_notification.central_scene
+    property: scene
+    property_key: '001'
+    endpoint: 0
+    command_class: 91
+    subtype: Endpoint 0 Scene 001
+    trigger: device
+    value: 4
+  conditions: []
+  actions:
+  - action: light.turn_on
+    metadata: {}
+    target:
+      entity_id:
+      - light.master_bedroom_kamis_lamp
+      - light.master_bedroom_matts_lamp
+    data:
+      brightness_pct: 50
+  mode: single
+- id: '1775002608036'
+  alias: Zooz Master Bedroom Scene 004 Good Night
+  description: ''
+  triggers:
+  - device_id: 406f40b62881310e461a92cad18a011c
+    domain: zwave_js
+    type: event.value_notification.central_scene
+    property: scene
+    property_key: '004'
+    endpoint: 0
+    command_class: 91
+    subtype: Endpoint 0 Scene 004
+    trigger: device
+  conditions: []
+  actions:
+  - action: light.turn_off
+    metadata: {}
+    target:
+      device_id:
+      - 61ba51b34bb20fa15fbd2ecb721a3ca7
+      - f0e8bb20ebead74db406abafa3542ba8
+      - fb6e0f3ea096f956d898a2feeae4fbe2
+      - 9d6677dae182f3256213a772c53a849d
+      - 1dbd7211cd51600862083712c102affc
+      - 4e331ec2ccbfbfe3d8cbd0019c944da2
+      - 8e58231024efd83f9b309744573bca2a
+      entity_id:
+      - light.terrace_fan_lights
+      - light.tulipan_pool_bar_2
+      - light.terrace_lights_group
+      - light.kitchen_under_cabinet_lights
+    data: {}
+  - action: fan.turn_off
+    metadata: {}
+    target:
+      entity_id:
+      - fan.terrace_fans
+      - fan.tulipan_pool_bar_fan
+    data: {}
+  - type: turn_off
+    device_id: 8e2c5cc821624999cf79ba86fd775f08
+    entity_id: 801ca7179e9b50b00c28a51a2ce09290
+    domain: switch
+  - type: turn_off
+    device_id: 589a2f8290228f0abdd378d1ddf968fa
+    entity_id: 0a03290aa59ae8d0644527b53ec9e9da
+    domain: switch
+  - type: turn_off
+    device_id: 63a82708cfa92a26f225c525ca30665e
+    entity_id: cd10f725de10826edafd3c2974b7160d
+    domain: switch
+  - type: turn_on
+    device_id: 2512da8e407188a2f22e206cc0dd3474
+    entity_id: 3e4d500496805f0ef078b1abba58839b
+    domain: switch
+  - type: turn_off
+    device_id: a01f9ccef04c2e15cbc6ba3290d8c415
+    entity_id: 2a0244dcc07e2b0a9e038b2c754cc1a1
+    domain: switch
+  - action: media_player.turn_off
+    metadata: {}
+    target:
+      entity_id: media_player.family_room_tv
+    data: {}
+  - type: turn_off
+    device_id: 8c3410e886587bc74ce790325a557d96
+    entity_id: 2ff8b2e97fdc4b48b01672fcee83e950
+    domain: switch
+  mode: single
+- id: '1776031925047'
+  alias: Toggle Pool Bar Fan Light from Pool Bar Pico
+  description: ''
+  triggers:
+  - device_id: 005c8380e0b1a4c68d09d65a2442e34a
+    domain: lutron_caseta
+    type: press
+    subtype: 'on'
+    metadata: {}
+    trigger: device
+  conditions: []
+  actions:
+  - action: light.toggle
+    metadata: {}
+    target:
+      entity_id: light.tulipan_pool_bar_2
+    data:
+      brightness_pct: 100
+  mode: single
+- id: '1776032077495'
+  alias: Toggle Pool Bar Fan from Pool Bar Pico
+  description: ''
+  triggers:
+  - device_id: 005c8380e0b1a4c68d09d65a2442e34a
+    domain: lutron_caseta
+    type: press
+    subtype: 'off'
+    trigger: device
+  conditions: []
+  actions:
+  - action: fan.toggle
+    metadata: {}
+    target:
+      entity_id: fan.tulipan_pool_bar_fan
+    data: {}
+  mode: single
+- id: '1776196680204'
+  alias: Open Garage Door When Matt Comes Home
+  description: ''
+  triggers:
+  - trigger: state
+    entity_id:
+    - device_tracker.matts_iphone
+    to:
+    - 350 Calle Tulipan Tight Zone
+    from:
+    - La Serrania Main Gate
+  conditions:
+  - condition: device
+    device_id: d0390a4e69452a4a46d81e2fcbd3295f
+    domain: cover
+    entity_id: e3b9d16b1983036abf44baca66b3519a
+    type: is_closed
+  actions:
+  - action: cover.open_cover
+    metadata: {}
+    target:
+      entity_id: cover.tulipan_garage
+    data: {}
+  mode: single
+- id: '1776613304914'
+  alias: LUMA Power Failure Notification
+  description: ''
+  triggers:
+  - trigger: state
+    entity_id:
+    - binary_sensor.bernier_matthew_carl_grid_status
+    from:
+    - 'on'
+    to:
+    - 'off'
+  conditions: []
+  actions:
+  - action: notify.mobile_app_matts_iphone
+    metadata: {}
+    data:
+      message: LUMA Power Outage Detected
+      title: LUMA Power Status
+  - action: notify.mobile_app_kamis_iphone
+    metadata: {}
+    data:
+      message: LUMA Power Outage Detected
+      title: LUMA Power Status
+  mode: single
+- id: '1776613594397'
+  alias: LUMA Power Back ON Notification
+  description: ''
+  triggers:
+  - trigger: state
+    entity_id:
+    - binary_sensor.bernier_matthew_carl_grid_status
+    from:
+    - 'off'
+    to:
+    - 'on'
+  conditions: []
+  actions:
+  - action: notify.mobile_app_matts_iphone
+    metadata: {}
+    data:
+      message: LUMA power is back ON
+      title: LUMA Power Status
+  - action: notify.mobile_app_kamis_iphone
+    metadata: {}
+    data:
+      message: LUMA power is back ON
+      title: LUMA Power Status
+  mode: single
+- id: '1776645524055'
+  alias: Change Under Cabinet lighting to steel blue at 8:00 pm
+  description: ''
+  triggers:
+  - trigger: time
+    at: '20:00:00'
+    weekday:
+    - sun
+    - mon
+    - tue
+    - wed
+    - thu
+    - fri
+    - sat
+    enabled: false
+  - trigger: time_pattern
+    minutes: /2
+  conditions:
+  - condition: time
+    after: '20:00:00'
+    before: '23:00:00'
+  - condition: state
+    entity_id: input_boolean.under_cabinet_ran_today
+    state: 'off'
+  - condition: device
+    type: is_off
+    device_id: 61ba51b34bb20fa15fbd2ecb721a3ca7
+    entity_id: 1c91d71205b66c43b2e2d21392dda0f8
+    domain: light
+  actions:
+  - action: light.turn_on
+    metadata: {}
+    target:
+      entity_id:
+      - light.kitchen_under_cabinet_lights
+      - light.family_room_lamp
+    data:
+      rgb_color:
+      - 70
+      - 130
+      - 180
+      brightness: 255
+  - action: input_boolean.turn_on
+    target:
+      entity_id: input_boolean.under_cabinet_ran_today
+  mode: single
+- id: '1776650287005'
+  alias: Zooz Terrace Scene 003 Single Button Press back yard lights on
+  description: ''
+  triggers:
+  - device_id: 7fc0920a7192e5f175bf99988694b5a3
+    domain: zwave_js
+    type: event.value_notification.central_scene
+    property: scene
+    property_key: '003'
+    endpoint: 0
+    command_class: 91
+    subtype: Endpoint 0 Scene 003
+    trigger: device
+  conditions: []
+  actions:
+  - action: light.turn_on
+    metadata: {}
+    target:
+      entity_id:
+      - light.terrace_lights_group
+      - light.pool_bar_bath_hallway
+      - light.tulipan_pool_bar_2
+      - light.terrace_fan_lights
+    data:
+      brightness_pct: 100
+  - action: switch.turn_on
+    metadata: {}
+    target:
+      entity_id:
+      - switch.left_terrace_switch_switch_1
+      - switch.right_terrace_switch_switch_1
+      - switch.pool_bar_recessed_lights
+    data: {}
+  mode: single
+- id: '1776650566238'
+  alias: Zooz Terrace Scene 003 Held Button Press back yard lights off
+  description: ''
+  triggers:
+  - device_id: 7fc0920a7192e5f175bf99988694b5a3
+    domain: zwave_js
+    type: event.value_notification.central_scene
+    property: scene
+    property_key: '003'
+    endpoint: 0
+    command_class: 91
+    subtype: Endpoint 0 Scene 003
+    trigger: device
+    value: 2
+  conditions: []
+  actions:
+  - action: light.turn_off
+    metadata: {}
+    target:
+      entity_id:
+      - light.terrace_lights_group
+      - light.pool_bar_bath_hallway
+      - light.tulipan_pool_bar_2
+      - light.terrace_fan_lights
+    data: {}
+  - action: switch.turn_off
+    metadata: {}
+    target:
+      entity_id:
+      - switch.left_terrace_switch_switch_1
+      - switch.right_terrace_switch_switch_1
+      - switch.pool_bar_recessed_lights
+    data: {}
+  mode: single
+- id: '1777144152555'
+  alias: Close Master Bedroom Blinds 50% 1 Hour After Sunset
+  description: ''
+  triggers:
+  - trigger: sun
+    event: sunset
+    offset: '1:00:00'
+  conditions: []
+  actions:
+  - action: scene.turn_on
+    metadata: {}
+    target:
+      entity_id: scene.master_bedroom_blinds_50
+    data: {}
+  mode: single
+- id: '1777144540484'
+  alias: Close Bedroom Blinds 100% at 9:00 pm
+  description: ''
+  triggers:
+  - trigger: time
+    at: '21:00:00'
+    weekday:
+    - sun
+    - mon
+    - tue
+    - wed
+    - thu
+    - fri
+    - sat
+  conditions: []
+  actions:
+  - action: scene.turn_on
+    metadata: {}
+    target:
+      entity_id: scene.master_bedroom_blinds_nighttime_2
+    data: {}
+  mode: single
+- id: '1777205921702'
+  alias: Reset under cabinet flag at 8pm
+  description: ''
+  triggers:
+  - trigger: time
+    at: '19:59:00'
+  actions:
+  - action: input_boolean.turn_off
+    target:
+      entity_id: input_boolean.under_cabinet_ran_today
+  mode: single
+- id: '1777311063615'
+  alias: Send a notification when there are 15 minutes left on the oven timer
+  description: ''
+  triggers:
+  - type: duration
+    device_id: c9f8c2e9896bca05d6fcb8237cf728b2
+    entity_id: ab86e2409d02a4191712cde88f0bb400
+    domain: sensor
+    metadata:
+      secondary: false
+    trigger: device
+    below: 0.25
+  conditions: []
+  actions:
+  - action: notify.mobile_app_matts_iphone
+    metadata: {}
+    data:
+      message: 15 Minutes left on the oven Timer
+      title: Tulipan Oven Timer
+  mode: single
+- id: '1777909925786'
+  alias: Turn off Kitchen and Family Room LED lamps at 11:00 pm
+  description: ''
+  triggers:
+  - trigger: time
+    at: '23:00:00'
+    weekday:
+    - mon
+    - sun
+    - tue
+    - wed
+    - thu
+    - fri
+    - sat
+  conditions: []
+  actions:
+  - type: turn_off
+    device_id: 9d6677dae182f3256213a772c53a849d
+    entity_id: a3e661ece720412b98063aeed6c37290
+    domain: light
+  - action: light.turn_off
+    metadata: {}
+    target:
+      entity_id: light.kitchen_under_cabinet_lights
+    data: {}
+  mode: single

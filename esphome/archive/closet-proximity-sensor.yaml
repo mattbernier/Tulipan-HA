@@ -1,0 +1,32 @@
+esphome:
+  name: closet-proximity-sensor
+  friendly_name: Closet-Proximity-Sensor
+
+esp32:
+  board: esp32dev
+  framework:
+    type: esp-idf
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: "XeqV+hxFbdVO8xpw8wLJxpGej4n73MTWCtdUM/3IV9Y="
+
+ota:
+  - platform: esphome
+    password: "3ba8cb5bdfdf0da0cc2bcd8bc538429b"
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Closet-Proximity-Sensor"
+    password: "y1tzixxaLR48"
+
+captive_portal:
+    

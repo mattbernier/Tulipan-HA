@@ -1,0 +1,30 @@
+# Runtime / lock files
+.ha_run.lock
+home-assistant.log
+home-assistant.log.*
+home-assistant.log.fault
+
+# Database
+home-assistant_v2.db
+home-assistant_v2.db-shm
+home-assistant_v2.db-wal
+
+# Credentials, certs, and auth state
+.cloud/
+.storage/
+secrets.yaml
+*-key.pem
+
+# Cache and dependencies
+.cache/
+deps/
+
+# TTS generated audio
+tts/
+
+# Zigbee2MQTT runtime data
+zigbee2mqtt/database.db
+zigbee2mqtt/database.db.backup
+zigbee2mqtt/coordinator_backup.json
+zigbee2mqtt/log/
+zigbee2mqtt/state.json

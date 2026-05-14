@@ -1,0 +1,846 @@
+- id: '1777142057315'
+  name: Master Bedroom Morning Blinds
+  entities:
+    cover.smartwings_window_covering_5:
+      is_closed: false
+      current_position: 100
+      device_class: shade
+      friendly_name: Master Bedroom Back Window Blind
+      supported_features: 15
+      state: open
+    cover.smartwings_window_covering_2:
+      is_closed: false
+      current_position: 100
+      device_class: shade
+      friendly_name: Master Bedroom Left Door Blind
+      supported_features: 15
+      state: open
+    cover.master_bedroom_right_door_blind:
+      is_closed: false
+      current_position: 100
+      device_class: shade
+      friendly_name: Master Bedroom Right Door Blind
+      supported_features: 15
+      state: open
+  metadata: {}
+  icon: mdi:blinds
+- id: '1777143507744'
+  name: Master Bedroom Blinds 50%
+  entities:
+    cover.smartwings_window_covering_5:
+      is_closed: false
+      current_position: 50
+      device_class: shade
+      friendly_name: Master Bedroom Back Window Blind
+      supported_features: 15
+      state: open
+    cover.smartwings_window_covering_2:
+      is_closed: false
+      current_position: 50
+      device_class: shade
+      friendly_name: Master Bedroom Left Door Blind
+      supported_features: 15
+      state: open
+    cover.master_bedroom_right_door_blind:
+      is_closed: false
+      current_position: 50
+      device_class: shade
+      friendly_name: Master Bedroom Right Door Blind
+      supported_features: 15
+      state: open
+    cover.master_bedroom_right_window_blind:
+      is_closed: false
+      current_position: 50
+      device_class: shade
+      friendly_name: Master Bedroom Right Window Blind
+      supported_features: 15
+      state: open
+  metadata: {}
+  icon: mdi:blinds
+- id: '1777143691729'
+  name: Master Bedroom Blinds Nighttime
+  entities:
+    cover.smartwings_window_covering_5:
+      is_closed: true
+      current_position: 0
+      device_class: shade
+      friendly_name: Master Bedroom Back Window Blind
+      supported_features: 15
+      state: closed
+    cover.smartwings_window_covering_2:
+      is_closed: true
+      current_position: 0
+      device_class: shade
+      friendly_name: Master Bedroom Left Door Blind
+      supported_features: 15
+      state: closed
+    cover.master_bedroom_right_door_blind:
+      is_closed: true
+      current_position: 0
+      device_class: shade
+      friendly_name: Master Bedroom Right Door Blind
+      supported_features: 15
+      state: closed
+    cover.master_bedroom_right_window_blind:
+      is_closed: true
+      current_position: 0
+      device_class: shade
+      friendly_name: Master Bedroom Right Window Blind
+      supported_features: 15
+      state: closed
+  metadata: {}
+  icon: mdi:blinds
+- id: '1777431280837'
+  name: Good Night Scene
+  entities:
+    light.exterior_wall_right:
+      supported_color_modes:
+      - brightness
+      color_mode:
+      brightness:
+      device_id: '4'
+      zone_id: '3'
+      friendly_name: 1st Floor Closet Light
+      supported_features: 32
+      state: 'off'
+    light.1st_floor_bathroom_vanity_lights:
+      supported_color_modes:
+      - brightness
+      color_mode:
+      brightness:
+      device_id: '11'
+      zone_id: '9'
+      friendly_name: 1st Floor Bathroom Vanity Lights
+      supported_features: 32
+      state: 'off'
+    light.back_entry_main_lights:
+      supported_color_modes:
+      - brightness
+      color_mode:
+      brightness:
+      device_id: '15'
+      zone_id: '13'
+      friendly_name: Back Entry Main Lights
+      supported_features: 32
+      state: 'off'
+    light.dining_room_chandelier:
+      supported_color_modes:
+      - brightness
+      color_mode:
+      brightness:
+      device_id: '14'
+      zone_id: '12'
+      friendly_name: Dining Room Chandelier
+      supported_features: 32
+      state: 'off'
+    light.living_room_main_lights:
+      supported_color_modes:
+      - brightness
+      color_mode:
+      brightness:
+      device_id: '18'
+      zone_id: '16'
+      friendly_name: Living Room Main Lights
+      supported_features: 32
+      state: 'off'
+    switch.garage_main_lights:
+      device_id: '12'
+      zone_id: '10'
+      friendly_name: Garage Main Lights
+      state: 'off'
+    light.hallway_garage_light:
+      supported_color_modes:
+      - brightness
+      color_mode:
+      brightness:
+      device_id: '13'
+      zone_id: '11'
+      friendly_name: Hallway Garage Light
+      supported_features: 32
+      state: 'off'
+    light.kitchen_above_cabinet:
+      supported_color_modes:
+      - brightness
+      color_mode:
+      brightness:
+      device_id: '27'
+      zone_id: '21'
+      friendly_name: Kitchen Above Cabinet
+      supported_features: 32
+      state: 'off'
+    switch.terrace_fans:
+      device_id: '2'
+      zone_id: '1'
+      friendly_name: Terrace Fans
+      state: 'off'
+    light.terrace_lights_group:
+      min_color_temp_kelvin: 2700
+      max_color_temp_kelvin: 6500
+      effect_list:
+      - A Style
+      - Beautiful
+      - Birthday
+      - Christmas
+      - Colorful
+      - Default
+      - Dream
+      - F Style
+      - Forest
+      - Halloween
+      - Leisure 1
+      - Leisure 2
+      - Meeting
+      - Mode Color
+      - Mode Scene
+      - Music
+      - Night 1
+      - Night 2
+      - Rainbow
+      - Read 1
+      - Read 2
+      - Soft
+      - Wedding Anniversary
+      - Working
+      supported_color_modes:
+      - color_temp
+      - hs
+      effect:
+      color_mode:
+      brightness:
+      color_temp_kelvin:
+      hs_color:
+      rgb_color:
+      xy_color:
+      entity_id:
+      - light.tulipan_terrace_left_outerwall
+      - light.tulipan_terrace_right_outerwall
+      - light.tulipan_terrace_left_side_outerwall
+      - light.tulipan_terrace_right_side_outerwall
+      icon: mdi:lightbulb-group
+      friendly_name: Terrace Lights Group
+      supported_features: 4
+      state: 'off'
+    switch.family_room_main_lights:
+      device_id: '10'
+      zone_id: '8'
+      friendly_name: Family Room Main Lights
+      state: 'off'
+    switch.left_terrace_switch_switch_1:
+      raw_state: false
+      device_class: switch
+      icon: ''
+      friendly_name: Wall Lights
+      state: 'off'
+    switch.right_terrace_switch_switch_1:
+      raw_state: false
+      device_class: switch
+      icon: ''
+      friendly_name: Right Wall Lights
+      state: 'off'
+    switch.right_terrace_switch_switch_2:
+      raw_state: false
+      device_class: switch
+      icon: ''
+      friendly_name: Front Light
+      state: 'off'
+    switch.left_terrace_switch_switch_3:
+      raw_state: false
+      device_class: switch
+      icon: ''
+      friendly_name: Front Gate Lights
+      state: 'off'
+    climate.150633095227811_climate:
+      hvac_modes:
+      - 'off'
+      - auto
+      - cool
+      - dry
+      - heat
+      - fan_only
+      min_temp: 61
+      max_temp: 86
+      target_temp_step: 0.5
+      fan_modes:
+      - silent
+      - low
+      - medium
+      - high
+      - full
+      - auto
+      preset_modes:
+      - none
+      - comfort
+      - eco
+      - boost
+      - sleep
+      - away
+      swing_modes:
+      - 'off'
+      - vertical
+      - horizontal
+      - both
+      current_temperature: 72
+      temperature: 72
+      fan_mode: auto
+      preset_mode: none
+      swing_mode: 'off'
+      prompt_tone: true
+      power: true
+      mode: 1
+      target_temperature: 22
+      fan_speed: 102
+      swing_vertical: false
+      swing_horizontal: false
+      smart_eye: false
+      dry: false
+      aux_heating: false
+      boost_mode: false
+      sleep_mode: false
+      frost_protect: false
+      comfort_mode: false
+      eco_mode: false
+      natural_wind: false
+      temp_fahrenheit: true
+      screen_display: true
+      screen_display_alternate: false
+      full_dust: false
+      indoor_temperature: 22
+      outdoor_temperature: 25.5
+      indirect_wind: false
+      indoor_humidity:
+      breezeless: false
+      total_energy_consumption: 0
+      total_operating_consumption: 0
+      current_energy_consumption: 0
+      realtime_power: 0
+      electrify_time: 0
+      total_operating_time: 0
+      current_operating_time: 0
+      fresh_air_power: false
+      fresh_air_fan_speed: 0
+      fresh_air_mode:
+      fresh_air_1:
+      fresh_air_2:
+      wind_lr_angle:
+      wind_ud_angle:
+      icon: mdi:air-conditioner
+      friendly_name: Family Room AC
+      supported_features: 441
+      state: auto
+    climate.150633095147232_climate:
+      hvac_modes:
+      - 'off'
+      - auto
+      - cool
+      - dry
+      - heat
+      - fan_only
+      min_temp: 61
+      max_temp: 86
+      target_temp_step: 0.5
+      fan_modes:
+      - silent
+      - low
+      - medium
+      - high
+      - full
+      - auto
+      preset_modes:
+      - none
+      - comfort
+      - eco
+      - boost
+      - sleep
+      - away
+      swing_modes:
+      - 'off'
+      - vertical
+      - horizontal
+      - both
+      current_temperature: 72
+      temperature: 72
+      fan_mode: auto
+      preset_mode: none
+      swing_mode: 'off'
+      prompt_tone: true
+      power: true
+      mode: 1
+      target_temperature: 22.5
+      fan_speed: 101
+      swing_vertical: false
+      swing_horizontal: false
+      smart_eye: false
+      dry: false
+      aux_heating: false
+      boost_mode: false
+      sleep_mode: false
+      frost_protect: false
+      comfort_mode: false
+      eco_mode: false
+      natural_wind: false
+      temp_fahrenheit: true
+      screen_display: true
+      screen_display_alternate: true
+      full_dust: false
+      indoor_temperature: 22.1
+      outdoor_temperature: 25.2
+      indirect_wind: false
+      indoor_humidity:
+      breezeless: false
+      total_energy_consumption: 131.4
+      total_operating_consumption: 0
+      current_energy_consumption: 0
+      realtime_power: 8.2
+      electrify_time: 545705.2666666667
+      total_operating_time: 98617.47916666667
+      current_operating_time: 1370112
+      fresh_air_power: false
+      fresh_air_fan_speed: 0
+      fresh_air_mode:
+      fresh_air_1:
+      fresh_air_2:
+      wind_lr_angle: 'off'
+      wind_ud_angle: 'off'
+      icon: mdi:air-conditioner
+      friendly_name: Living Room AC
+      supported_features: 441
+      state: auto
+    switch.pantry_main_lights:
+      device_id: '16'
+      zone_id: '14'
+      friendly_name: Pantry Main Lights
+      state: 'off'
+    light.pool_bar_bath_hallway:
+      supported_color_modes:
+      - brightness
+      color_mode:
+      brightness:
+      device_id: '3'
+      zone_id: '2'
+      friendly_name: Pool Bar Bath Hallway
+      supported_features: 32
+      state: 'off'
+    switch.pool_bar_bath_house:
+      device_id: '7'
+      zone_id: '6'
+      friendly_name: Pool Bar Bath House
+      state: 'off'
+    light.tulipan_pool_bar_2:
+      min_color_temp_kelvin: 2700
+      max_color_temp_kelvin: 6500
+      effect_list:
+      supported_color_modes:
+      - color_temp
+      effect:
+      color_mode:
+      brightness:
+      color_temp_kelvin:
+      hs_color:
+      rgb_color:
+      xy_color:
+      raw_state: false
+      raw_brightness: 100
+      raw_color_temp: 1
+      icon: ''
+      friendly_name: Pool Bar Fan (Local)
+      supported_features: 4
+      state: 'off'
+    switch.pool_bar_recessed_lights:
+      device_id: '6'
+      zone_id: '5'
+      friendly_name: Pool Bar Recessed Lights
+      state: 'off'
+    fan.tulipan_pool_bar_fan:
+      preset_modes:
+      direction: forward
+      percentage: 100
+      percentage_step: 16.666666666666668
+      preset_mode:
+      icon: mdi:fan
+      friendly_name: Pool Bar Fan (Local) Fan
+      supported_features: 53
+      state: 'off'
+    light.kitchen_under_cabinet_lights:
+      min_color_temp_kelvin: 2700
+      max_color_temp_kelvin: 6500
+      effect_list:
+      - Action
+      - Adventure Game
+      - Afternoon
+      - Afternoon B
+      - Amusement
+      - Aurora
+      - Awaken
+      - Beer Festival
+      - Birthday
+      - Breathe
+      - Breeze
+      - Business
+      - Candlelight
+      - Candy Cane
+      - Cards Game
+      - Care
+      - Carnival
+      - Cheerful
+      - Children's Day
+      - Christmas
+      - Christmas Bell
+      - Christmas Eve
+      - Christmas Gift
+      - Christmas Tree
+      - Christmas Wreath
+      - Comedies
+      - Cornfield
+      - Cornfield B
+      - Cosplay
+      - Crazy
+      - Crossing
+      - Dance Party
+      - Dancing
+      - Daze
+      - Deep Sea B
+      - Deep sea
+      - Desert
+      - Desert B
+      - Dinner
+      - Disco
+      - Documentaries
+      - Downpour
+      - Downpour B
+      - Dramas
+      - Dreamland
+      - Earth
+      - Easter
+      - Energetic
+      - Enthusiastic
+      - Excited
+      - Fall
+      - Fascination
+      - Father's Day
+      - Fight
+      - Fighting Game
+      - Fire
+      - Firefly B
+      - Fireworks
+      - Flash
+      - Flow
+      - Flower Field
+      - Flower Parade
+      - Forest
+      - Forest B
+      - Game
+      - Gary
+      - Ghost
+      - Glacier
+      - Gobi Desert
+      - Halloween
+      - Happy
+      - Heartbeat
+      - High
+      - Hooray
+      - Judy
+      - Karst Cave
+      - Karst Cave B
+      - Leisure
+      - Lightning
+      - Meditation
+      - Meteor
+      - Meteor shower
+      - Moonlight
+      - Morning
+      - Morning B
+      - Mother's Day
+      - Movie
+      - Music Show
+      - Mysterious
+      - New Years
+      - Nick
+      - Night
+      - Night B
+      - Party
+      - Profound
+      - Puzzle Game
+      - Quiet
+      - Racing Game
+      - Rainbow
+      - Reading
+      - Release
+      - Ripple
+      - River
+      - Romance
+      - Romantic
+      - Rush
+      - Rustling leaves
+      - Sailboat
+      - Saint Patrick's Day
+      - Santa Claus
+      - Science Fiction
+      - Shooting Game
+      - Siren
+      - Sky
+      - Sky B
+      - Sled
+      - Sleep
+      - Snow flake
+      - Soothing
+      - Sports
+      - Spring
+      - Stacking
+      - Star
+      - Starry Night B
+      - Starry Sky
+      - Study
+      - Summer
+      - Sunny
+      - Sunrise
+      - Sunset
+      - Sunshine
+      - Suspense
+      - Sweet
+      - Swing
+      - Tension
+      - Thanksgiving
+      - Thrillers
+      - Twinkle
+      - Universe
+      - Universe B
+      - Valentine's Day
+      - Venus
+      - Volcano
+      - War Films
+      - Warm
+      - Wave
+      - Wave B
+      - White Light
+      - Winter
+      - Work
+      - ZDP Duo
+      - ZDP Trio
+      supported_color_modes:
+      - color_temp
+      - rgb
+      effect:
+      color_mode:
+      brightness:
+      color_temp_kelvin:
+      hs_color:
+      rgb_color:
+      xy_color:
+      entity_id:
+      - light.kitchen_cabinets_left
+      - light.kitchen_cabinets_right
+      icon: mdi:lightbulb-group
+      friendly_name: Kitchen Under Cabinet Lights Group
+      supported_features: 4
+      state: 'off'
+    light.family_room_lamp:
+      min_color_temp_kelvin: 2200
+      max_color_temp_kelvin: 6500
+      effect_list:
+      - Work
+      - Study
+      - White Light
+      - Technology
+      - Leisure
+      - Candy
+      - Meditation
+      - Game
+      - Dance Party
+      - Afternoon Tea
+      - Sleep
+      - Naps
+      - Dine Together
+      - Yoga
+      - Movie
+      - Tunnel
+      - Night Light
+      - The Piano
+      - Fireworks
+      - Blossom
+      - Pixie
+      - Electro Dance
+      - Accumulation
+      - Release
+      - Fight
+      - Swing
+      - Stacking
+      - Bouncing Ball
+      - Bubble
+      - Desert B
+      - Sand Grains
+      - Karst Cave-A
+      - Karst Cave-B
+      - Glacier
+      - Lake
+      - Mountain Forest
+      - Journey of Flowers
+      - River
+      - Downpour
+      - Desert
+      - Rustling leaves
+      - Deep sea
+      - Morning
+      - Flower Field
+      - Night
+      - Sky
+      - Volcano
+      - Twilight
+      - Thunderstorm
+      - Warm Sun
+      - Star
+      - Lakeside
+      - Floating Mist
+      - Bouquet
+      - Lavender
+      - Sunflower
+      - Carnations
+      - Violets
+      - Aurora
+      - Rainbow-A
+      - Rainbow-B
+      - Meteor
+      - Fire
+      - Sunrise
+      - Sunset
+      - Ripple
+      - Wave
+      - Cherry blossoms
+      - Forest
+      - Sweet
+      - Quiet
+      - Dreamlike
+      - Happy
+      - Light
+      - Tension
+      - Tenderness
+      - Unspoken Love
+      - Warm
+      - Enthusiastic
+      - Profound
+      - Leisurely
+      - Dreamland
+      - Cheerful
+      - Rush
+      - Heartbeat
+      - Romantic
+      - Easter
+      - New Years
+      - Saint Patrick's Day
+      - Halloween
+      - Thanksgiving
+      - Christmas
+      - Christmas Tree
+      - Mother's Day
+      - Christmas Gift
+      - Father's Day
+      - Carnival
+      - Party
+      - Birthday
+      - Valentine's Day
+      - Halloween B
+      - Children's Day
+      - Family Day
+      - Baroque
+      - Rococo Style
+      - Impressionism
+      - Minimalism
+      - Pop Art
+      - Memphis Style
+      - Cyberpunk
+      supported_color_modes:
+      - color_temp
+      - rgb
+      effect:
+      color_mode:
+      brightness:
+      color_temp_kelvin:
+      hs_color:
+      rgb_color:
+      xy_color:
+      supports_scenes: true
+      available_scenes_count: 0
+      dynamic_scenes_count: 110
+      diy_scenes_count: 0
+      friendly_name: Family Room Lamp (GoveeLife) Family Room Lamp
+      supported_features: 4
+      state: 'off'
+    media_player.lg_webos_tv_b2cb:
+      source_list:
+      - AirPlay
+      - Live TV
+      - Fire TV Cube
+      - HDMI 2
+      - Sonos Sound Bar
+      - HDMI 4
+      - LOGICAL HDMI 1
+      - LOGICAL HDMI 2
+      - LOGICAL HDMI 3
+      - LOGICAL HDMI 4
+      - LOGICAL HDMI 5
+      - LOGICAL HDMI 6
+      - LOGICAL HDMI 7
+      - LOGICAL HDMI 8
+      - LOGICAL HDMI 9
+      - LOGICAL HDMI 10
+      - LOGICAL HDMI 11
+      device_class: tv
+      friendly_name: Family Room LG TV LG webOS TV B2CB
+      supported_features: 18817
+      state: 'off'
+    switch.stairs_main_lights:
+      device_id: '20'
+      zone_id: '18'
+      friendly_name: Stairs Main Lights
+      state: 'on'
+  metadata:
+    light.exterior_wall_right:
+      entity_only: true
+    light.1st_floor_bathroom_vanity_lights:
+      entity_only: true
+    light.back_entry_main_lights:
+      entity_only: true
+    light.dining_room_chandelier:
+      entity_only: true
+    light.living_room_main_lights:
+      entity_only: true
+    switch.garage_main_lights:
+      entity_only: true
+    light.hallway_garage_light:
+      entity_only: true
+    light.kitchen_above_cabinet:
+      entity_only: true
+    switch.terrace_fans:
+      entity_only: true
+    light.terrace_lights_group:
+      entity_only: true
+    switch.family_room_main_lights:
+      entity_only: true
+    switch.left_terrace_switch_switch_1:
+      entity_only: true
+    switch.right_terrace_switch_switch_1:
+      entity_only: true
+    switch.right_terrace_switch_switch_2:
+      entity_only: true
+    switch.left_terrace_switch_switch_3:
+      entity_only: true
+    switch.pantry_main_lights:
+      entity_only: true
+    light.pool_bar_bath_hallway:
+      entity_only: true
+    switch.pool_bar_bath_house:
+      entity_only: true
+    light.tulipan_pool_bar_2:
+      entity_only: true
+    switch.pool_bar_recessed_lights:
+      entity_only: true
+    fan.tulipan_pool_bar_fan:
+      entity_only: true
+    light.kitchen_under_cabinet_lights:
+      entity_only: true
+    light.family_room_lamp:
+      entity_only: true
+    media_player.lg_webos_tv_b2cb:
+      entity_only: true
+    switch.stairs_main_lights:
+      entity_only: true
+  icon: mdi:sleep

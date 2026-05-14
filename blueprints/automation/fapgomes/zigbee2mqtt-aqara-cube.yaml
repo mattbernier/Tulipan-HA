@@ -1,0 +1,300 @@
+blueprint:
+  name: Zigbee2MQTT - Aqara Cube
+  description: Blueprint for Aqara Cube via Zigbee2MQTT. Supports all 10 actions (tap,
+    shake, throw, wakeup, fall, slide, flip180, flip90, rotate_left, rotate_right)
+    on each of the 6 sides where applicable.
+  domain: automation
+  source_url: https://github.com/fapgomes/ha-blueprints/blob/main/zigbee2mqtt-aqara-cube.yaml
+  input:
+    mode:
+      name: Automation Mode
+      description: https://www.home-assistant.io/docs/automation/modes/
+      default: single
+      selector:
+        select:
+          mode: dropdown
+          options:
+          - single
+          - restart
+          - queued
+          - parallel
+          custom_value: false
+          sort: false
+          multiple: false
+    remote:
+      name: Aqara Cube
+      description: Select the Aqara Cube action sensor
+      selector:
+        entity:
+          domain:
+          - event
+          multiple: true
+          reorder: false
+    tap_on_side_0:
+      name: Tap - Side 0
+      default: []
+      selector:
+        action: {}
+    tap_on_side_1:
+      name: Tap - Side 1
+      default: []
+      selector:
+        action: {}
+    tap_on_side_2:
+      name: Tap - Side 2
+      default: []
+      selector:
+        action: {}
+    tap_on_side_3:
+      name: Tap - Side 3
+      default: []
+      selector:
+        action: {}
+    tap_on_side_4:
+      name: Tap - Side 4
+      default: []
+      selector:
+        action: {}
+    tap_on_side_5:
+      name: Tap - Side 5
+      default: []
+      selector:
+        action: {}
+    shake_on_side_0:
+      name: Shake - Side 0
+      default: []
+      selector:
+        action: {}
+    shake_on_side_1:
+      name: Shake - Side 1
+      default: []
+      selector:
+        action: {}
+    shake_on_side_2:
+      name: Shake - Side 2
+      default: []
+      selector:
+        action: {}
+    shake_on_side_3:
+      name: Shake - Side 3
+      default: []
+      selector:
+        action: {}
+    shake_on_side_4:
+      name: Shake - Side 4
+      default: []
+      selector:
+        action: {}
+    shake_on_side_5:
+      name: Shake - Side 5
+      default: []
+      selector:
+        action: {}
+    slide_on_side_0:
+      name: Slide - Side 0
+      default: []
+      selector:
+        action: {}
+    slide_on_side_1:
+      name: Slide - Side 1
+      default: []
+      selector:
+        action: {}
+    slide_on_side_2:
+      name: Slide - Side 2
+      default: []
+      selector:
+        action: {}
+    slide_on_side_3:
+      name: Slide - Side 3
+      default: []
+      selector:
+        action: {}
+    slide_on_side_4:
+      name: Slide - Side 4
+      default: []
+      selector:
+        action: {}
+    slide_on_side_5:
+      name: Slide - Side 5
+      default: []
+      selector:
+        action: {}
+    flip180_on_side_0:
+      name: Flip 180 - Side 0
+      default: []
+      selector:
+        action: {}
+    flip180_on_side_1:
+      name: Flip 180 - Side 1
+      default: []
+      selector:
+        action: {}
+    flip180_on_side_2:
+      name: Flip 180 - Side 2
+      default: []
+      selector:
+        action: {}
+    flip180_on_side_3:
+      name: Flip 180 - Side 3
+      default: []
+      selector:
+        action: {}
+    flip180_on_side_4:
+      name: Flip 180 - Side 4
+      default: []
+      selector:
+        action: {}
+    flip180_on_side_5:
+      name: Flip 180 - Side 5
+      default: []
+      selector:
+        action: {}
+    flip90_on_side_0:
+      name: Flip 90 - Side 0
+      default: []
+      selector:
+        action: {}
+    flip90_on_side_1:
+      name: Flip 90 - Side 1
+      default: []
+      selector:
+        action: {}
+    flip90_on_side_2:
+      name: Flip 90 - Side 2
+      default: []
+      selector:
+        action: {}
+    flip90_on_side_3:
+      name: Flip 90 - Side 3
+      default: []
+      selector:
+        action: {}
+    flip90_on_side_4:
+      name: Flip 90 - Side 4
+      default: []
+      selector:
+        action: {}
+    flip90_on_side_5:
+      name: Flip 90 - Side 5
+      default: []
+      selector:
+        action: {}
+    throw_action:
+      name: Throw
+      default: []
+      selector:
+        action: {}
+    wakeup_action:
+      name: Wakeup
+      default: []
+      selector:
+        action: {}
+    fall_action:
+      name: Fall
+      default: []
+      selector:
+        action: {}
+    rotate_left_action:
+      name: Rotate Left
+      default: []
+      selector:
+        action: {}
+    rotate_right_action:
+      name: Rotate Right
+      default: []
+      selector:
+        action: {}
+mode: !input mode
+max_exceeded: silent
+trigger:
+- platform: state
+  entity_id: !input remote
+  not_to:
+  - unavailable
+  - unknown
+variables:
+  event_type: '{{ trigger.to_state.attributes.event_type | default('''') }}'
+  side: '{% set side_sensor = ''sensor.'' + trigger.entity_id.split(''.'')[-1] | replace(''_action'',
+    '''') + ''_side'' %} {{ states(side_sensor) | int(-1) }}
+
+    '
+condition:
+- '{{ event_type != '''' }}'
+action:
+- choose:
+  - conditions: '{{ event_type == ''tap'' and side == 0 }}'
+    sequence: !input tap_on_side_0
+  - conditions: '{{ event_type == ''tap'' and side == 1 }}'
+    sequence: !input tap_on_side_1
+  - conditions: '{{ event_type == ''tap'' and side == 2 }}'
+    sequence: !input tap_on_side_2
+  - conditions: '{{ event_type == ''tap'' and side == 3 }}'
+    sequence: !input tap_on_side_3
+  - conditions: '{{ event_type == ''tap'' and side == 4 }}'
+    sequence: !input tap_on_side_4
+  - conditions: '{{ event_type == ''tap'' and side == 5 }}'
+    sequence: !input tap_on_side_5
+  - conditions: '{{ event_type == ''shake'' and side == 0 }}'
+    sequence: !input shake_on_side_0
+  - conditions: '{{ event_type == ''shake'' and side == 1 }}'
+    sequence: !input shake_on_side_1
+  - conditions: '{{ event_type == ''shake'' and side == 2 }}'
+    sequence: !input shake_on_side_2
+  - conditions: '{{ event_type == ''shake'' and side == 3 }}'
+    sequence: !input shake_on_side_3
+  - conditions: '{{ event_type == ''shake'' and side == 4 }}'
+    sequence: !input shake_on_side_4
+  - conditions: '{{ event_type == ''shake'' and side == 5 }}'
+    sequence: !input shake_on_side_5
+  - conditions: '{{ event_type == ''slide'' and side == 0 }}'
+    sequence: !input slide_on_side_0
+  - conditions: '{{ event_type == ''slide'' and side == 1 }}'
+    sequence: !input slide_on_side_1
+  - conditions: '{{ event_type == ''slide'' and side == 2 }}'
+    sequence: !input slide_on_side_2
+  - conditions: '{{ event_type == ''slide'' and side == 3 }}'
+    sequence: !input slide_on_side_3
+  - conditions: '{{ event_type == ''slide'' and side == 4 }}'
+    sequence: !input slide_on_side_4
+  - conditions: '{{ event_type == ''slide'' and side == 5 }}'
+    sequence: !input slide_on_side_5
+  - conditions: '{{ event_type == ''flip180'' and side == 0 }}'
+    sequence: !input flip180_on_side_0
+  - conditions: '{{ event_type == ''flip180'' and side == 1 }}'
+    sequence: !input flip180_on_side_1
+  - conditions: '{{ event_type == ''flip180'' and side == 2 }}'
+    sequence: !input flip180_on_side_2
+  - conditions: '{{ event_type == ''flip180'' and side == 3 }}'
+    sequence: !input flip180_on_side_3
+  - conditions: '{{ event_type == ''flip180'' and side == 4 }}'
+    sequence: !input flip180_on_side_4
+  - conditions: '{{ event_type == ''flip180'' and side == 5 }}'
+    sequence: !input flip180_on_side_5
+  - conditions: '{{ event_type == ''flip90'' and side == 0 }}'
+    sequence: !input flip90_on_side_0
+  - conditions: '{{ event_type == ''flip90'' and side == 1 }}'
+    sequence: !input flip90_on_side_1
+  - conditions: '{{ event_type == ''flip90'' and side == 2 }}'
+    sequence: !input flip90_on_side_2
+  - conditions: '{{ event_type == ''flip90'' and side == 3 }}'
+    sequence: !input flip90_on_side_3
+  - conditions: '{{ event_type == ''flip90'' and side == 4 }}'
+    sequence: !input flip90_on_side_4
+  - conditions: '{{ event_type == ''flip90'' and side == 5 }}'
+    sequence: !input flip90_on_side_5
+  - conditions: '{{ event_type == ''throw'' }}'
+    sequence: !input throw_action
+  - conditions: '{{ event_type == ''wakeup'' }}'
+    sequence: !input wakeup_action
+  - conditions: '{{ event_type == ''fall'' }}'
+    sequence: !input fall_action
+  - conditions: '{{ event_type == ''rotate_left'' }}'
+    sequence: !input rotate_left_action
+  - conditions: '{{ event_type == ''rotate_right'' }}'
+    sequence: !input rotate_right_action
+  default:
+  - action: logbook.log
+    data:
+      name: Zigbee2MQTT - Aqara Cube
+      message: 'Event: {{ event_type }} | Side: {{ side }}'
