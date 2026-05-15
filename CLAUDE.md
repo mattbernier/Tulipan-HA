@@ -74,6 +74,21 @@ The home has two floors plus outdoor/pool areas. HA area IDs are shown in parent
 
 > Note: "Matty's Room" and "Matty's Bedroom" are two separate HA areas covering the same physical bedroom; the Room area holds AV/climate devices and the Bedroom area holds lighting. AC entity naming uses `midea_ac_lan` serial-number-based IDs (e.g., `climate.151732606852810_climate` for Matty's room AC).
 
+## Entity Counts (as of 2026-05-14)
+
+1,094 total entities across 39 domains:
+
+| Domain | Count | Domain | Count |
+|---|---|---|---|
+| sensor | 364 | media_player | 36 |
+| switch | 134 | automation | 36 |
+| light | 98 | fan | 9 |
+| update | 82 | cover | 8 |
+| binary_sensor | 67 | climate | 5 |
+| button | 61 | lock | 5 |
+| number | 54 | device_tracker | 5 |
+| select | 53 | scene | 4 |
+
 ## Protocol / Integration Stack
 
 | Protocol | Integration | Notes |
